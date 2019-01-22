@@ -122,6 +122,11 @@ module.exports = () => {
       view: ComponentView
     },
     {
+      id: 'tag',
+      model: require('./model/ComponentTag'),
+      view: require('./view/ComponentTagView')
+    },
+    {
       id: 'default',
       model: Component,
       view: ComponentView

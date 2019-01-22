@@ -957,7 +957,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 
   // Set up Backbone appropriately for the environment. Start with AMD.
   if (true) {
-    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(/*! underscore */ "./node_modules/backbone-undo/node_modules/underscore/underscore.js"), __webpack_require__(/*! jquery */ "./node_modules/cash-dom/dist/cash.js"), exports], __WEBPACK_AMD_DEFINE_RESULT__ = (function(_, $, exports) {
+    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [__webpack_require__(/*! underscore */ "./node_modules/backbone-undo/node_modules/backbone/node_modules/underscore/underscore.js"), __webpack_require__(/*! jquery */ "./node_modules/cash-dom/dist/cash.js"), exports], __WEBPACK_AMD_DEFINE_RESULT__ = (function(_, $, exports) {
       // Export global even in AMD case in case this script is loaded with
       // others that may still expect a global Backbone.
       root.Backbone = factory(root, exports, _, $);
@@ -2809,6 +2809,1711 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_
 }));
 
 /* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../webpack/buildin/global.js */ "./node_modules/webpack/buildin/global.js")))
+
+/***/ }),
+
+/***/ "./node_modules/backbone-undo/node_modules/backbone/node_modules/underscore/underscore.js":
+/*!************************************************************************************************!*\
+  !*** ./node_modules/backbone-undo/node_modules/backbone/node_modules/underscore/underscore.js ***!
+  \************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+/* WEBPACK VAR INJECTION */(function(global, module) {var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;//     Underscore.js 1.9.1
+//     http://underscorejs.org
+//     (c) 2009-2018 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+//     Underscore may be freely distributed under the MIT license.
+
+(function() {
+
+  // Baseline setup
+  // --------------
+
+  // Establish the root object, `window` (`self`) in the browser, `global`
+  // on the server, or `this` in some virtual machines. We use `self`
+  // instead of `window` for `WebWorker` support.
+  var root = typeof self == 'object' && self.self === self && self ||
+            typeof global == 'object' && global.global === global && global ||
+            this ||
+            {};
+
+  // Save the previous value of the `_` variable.
+  var previousUnderscore = root._;
+
+  // Save bytes in the minified (but not gzipped) version:
+  var ArrayProto = Array.prototype, ObjProto = Object.prototype;
+  var SymbolProto = typeof Symbol !== 'undefined' ? Symbol.prototype : null;
+
+  // Create quick reference variables for speed access to core prototypes.
+  var push = ArrayProto.push,
+      slice = ArrayProto.slice,
+      toString = ObjProto.toString,
+      hasOwnProperty = ObjProto.hasOwnProperty;
+
+  // All **ECMAScript 5** native function implementations that we hope to use
+  // are declared here.
+  var nativeIsArray = Array.isArray,
+      nativeKeys = Object.keys,
+      nativeCreate = Object.create;
+
+  // Naked function reference for surrogate-prototype-swapping.
+  var Ctor = function(){};
+
+  // Create a safe reference to the Underscore object for use below.
+  var _ = function(obj) {
+    if (obj instanceof _) return obj;
+    if (!(this instanceof _)) return new _(obj);
+    this._wrapped = obj;
+  };
+
+  // Export the Underscore object for **Node.js**, with
+  // backwards-compatibility for their old module API. If we're in
+  // the browser, add `_` as a global object.
+  // (`nodeType` is checked to ensure that `module`
+  // and `exports` are not HTML elements.)
+  if ( true && !exports.nodeType) {
+    if ( true && !module.nodeType && module.exports) {
+      exports = module.exports = _;
+    }
+    exports._ = _;
+  } else {
+    root._ = _;
+  }
+
+  // Current version.
+  _.VERSION = '1.9.1';
+
+  // Internal function that returns an efficient (for current engines) version
+  // of the passed-in callback, to be repeatedly applied in other Underscore
+  // functions.
+  var optimizeCb = function(func, context, argCount) {
+    if (context === void 0) return func;
+    switch (argCount == null ? 3 : argCount) {
+      case 1: return function(value) {
+        return func.call(context, value);
+      };
+      // The 2-argument case is omitted because we’re not using it.
+      case 3: return function(value, index, collection) {
+        return func.call(context, value, index, collection);
+      };
+      case 4: return function(accumulator, value, index, collection) {
+        return func.call(context, accumulator, value, index, collection);
+      };
+    }
+    return function() {
+      return func.apply(context, arguments);
+    };
+  };
+
+  var builtinIteratee;
+
+  // An internal function to generate callbacks that can be applied to each
+  // element in a collection, returning the desired result — either `identity`,
+  // an arbitrary callback, a property matcher, or a property accessor.
+  var cb = function(value, context, argCount) {
+    if (_.iteratee !== builtinIteratee) return _.iteratee(value, context);
+    if (value == null) return _.identity;
+    if (_.isFunction(value)) return optimizeCb(value, context, argCount);
+    if (_.isObject(value) && !_.isArray(value)) return _.matcher(value);
+    return _.property(value);
+  };
+
+  // External wrapper for our callback generator. Users may customize
+  // `_.iteratee` if they want additional predicate/iteratee shorthand styles.
+  // This abstraction hides the internal-only argCount argument.
+  _.iteratee = builtinIteratee = function(value, context) {
+    return cb(value, context, Infinity);
+  };
+
+  // Some functions take a variable number of arguments, or a few expected
+  // arguments at the beginning and then a variable number of values to operate
+  // on. This helper accumulates all remaining arguments past the function’s
+  // argument length (or an explicit `startIndex`), into an array that becomes
+  // the last argument. Similar to ES6’s "rest parameter".
+  var restArguments = function(func, startIndex) {
+    startIndex = startIndex == null ? func.length - 1 : +startIndex;
+    return function() {
+      var length = Math.max(arguments.length - startIndex, 0),
+          rest = Array(length),
+          index = 0;
+      for (; index < length; index++) {
+        rest[index] = arguments[index + startIndex];
+      }
+      switch (startIndex) {
+        case 0: return func.call(this, rest);
+        case 1: return func.call(this, arguments[0], rest);
+        case 2: return func.call(this, arguments[0], arguments[1], rest);
+      }
+      var args = Array(startIndex + 1);
+      for (index = 0; index < startIndex; index++) {
+        args[index] = arguments[index];
+      }
+      args[startIndex] = rest;
+      return func.apply(this, args);
+    };
+  };
+
+  // An internal function for creating a new object that inherits from another.
+  var baseCreate = function(prototype) {
+    if (!_.isObject(prototype)) return {};
+    if (nativeCreate) return nativeCreate(prototype);
+    Ctor.prototype = prototype;
+    var result = new Ctor;
+    Ctor.prototype = null;
+    return result;
+  };
+
+  var shallowProperty = function(key) {
+    return function(obj) {
+      return obj == null ? void 0 : obj[key];
+    };
+  };
+
+  var has = function(obj, path) {
+    return obj != null && hasOwnProperty.call(obj, path);
+  }
+
+  var deepGet = function(obj, path) {
+    var length = path.length;
+    for (var i = 0; i < length; i++) {
+      if (obj == null) return void 0;
+      obj = obj[path[i]];
+    }
+    return length ? obj : void 0;
+  };
+
+  // Helper for collection methods to determine whether a collection
+  // should be iterated as an array or as an object.
+  // Related: http://people.mozilla.org/~jorendorff/es6-draft.html#sec-tolength
+  // Avoids a very nasty iOS 8 JIT bug on ARM-64. #2094
+  var MAX_ARRAY_INDEX = Math.pow(2, 53) - 1;
+  var getLength = shallowProperty('length');
+  var isArrayLike = function(collection) {
+    var length = getLength(collection);
+    return typeof length == 'number' && length >= 0 && length <= MAX_ARRAY_INDEX;
+  };
+
+  // Collection Functions
+  // --------------------
+
+  // The cornerstone, an `each` implementation, aka `forEach`.
+  // Handles raw objects in addition to array-likes. Treats all
+  // sparse array-likes as if they were dense.
+  _.each = _.forEach = function(obj, iteratee, context) {
+    iteratee = optimizeCb(iteratee, context);
+    var i, length;
+    if (isArrayLike(obj)) {
+      for (i = 0, length = obj.length; i < length; i++) {
+        iteratee(obj[i], i, obj);
+      }
+    } else {
+      var keys = _.keys(obj);
+      for (i = 0, length = keys.length; i < length; i++) {
+        iteratee(obj[keys[i]], keys[i], obj);
+      }
+    }
+    return obj;
+  };
+
+  // Return the results of applying the iteratee to each element.
+  _.map = _.collect = function(obj, iteratee, context) {
+    iteratee = cb(iteratee, context);
+    var keys = !isArrayLike(obj) && _.keys(obj),
+        length = (keys || obj).length,
+        results = Array(length);
+    for (var index = 0; index < length; index++) {
+      var currentKey = keys ? keys[index] : index;
+      results[index] = iteratee(obj[currentKey], currentKey, obj);
+    }
+    return results;
+  };
+
+  // Create a reducing function iterating left or right.
+  var createReduce = function(dir) {
+    // Wrap code that reassigns argument variables in a separate function than
+    // the one that accesses `arguments.length` to avoid a perf hit. (#1991)
+    var reducer = function(obj, iteratee, memo, initial) {
+      var keys = !isArrayLike(obj) && _.keys(obj),
+          length = (keys || obj).length,
+          index = dir > 0 ? 0 : length - 1;
+      if (!initial) {
+        memo = obj[keys ? keys[index] : index];
+        index += dir;
+      }
+      for (; index >= 0 && index < length; index += dir) {
+        var currentKey = keys ? keys[index] : index;
+        memo = iteratee(memo, obj[currentKey], currentKey, obj);
+      }
+      return memo;
+    };
+
+    return function(obj, iteratee, memo, context) {
+      var initial = arguments.length >= 3;
+      return reducer(obj, optimizeCb(iteratee, context, 4), memo, initial);
+    };
+  };
+
+  // **Reduce** builds up a single result from a list of values, aka `inject`,
+  // or `foldl`.
+  _.reduce = _.foldl = _.inject = createReduce(1);
+
+  // The right-associative version of reduce, also known as `foldr`.
+  _.reduceRight = _.foldr = createReduce(-1);
+
+  // Return the first value which passes a truth test. Aliased as `detect`.
+  _.find = _.detect = function(obj, predicate, context) {
+    var keyFinder = isArrayLike(obj) ? _.findIndex : _.findKey;
+    var key = keyFinder(obj, predicate, context);
+    if (key !== void 0 && key !== -1) return obj[key];
+  };
+
+  // Return all the elements that pass a truth test.
+  // Aliased as `select`.
+  _.filter = _.select = function(obj, predicate, context) {
+    var results = [];
+    predicate = cb(predicate, context);
+    _.each(obj, function(value, index, list) {
+      if (predicate(value, index, list)) results.push(value);
+    });
+    return results;
+  };
+
+  // Return all the elements for which a truth test fails.
+  _.reject = function(obj, predicate, context) {
+    return _.filter(obj, _.negate(cb(predicate)), context);
+  };
+
+  // Determine whether all of the elements match a truth test.
+  // Aliased as `all`.
+  _.every = _.all = function(obj, predicate, context) {
+    predicate = cb(predicate, context);
+    var keys = !isArrayLike(obj) && _.keys(obj),
+        length = (keys || obj).length;
+    for (var index = 0; index < length; index++) {
+      var currentKey = keys ? keys[index] : index;
+      if (!predicate(obj[currentKey], currentKey, obj)) return false;
+    }
+    return true;
+  };
+
+  // Determine if at least one element in the object matches a truth test.
+  // Aliased as `any`.
+  _.some = _.any = function(obj, predicate, context) {
+    predicate = cb(predicate, context);
+    var keys = !isArrayLike(obj) && _.keys(obj),
+        length = (keys || obj).length;
+    for (var index = 0; index < length; index++) {
+      var currentKey = keys ? keys[index] : index;
+      if (predicate(obj[currentKey], currentKey, obj)) return true;
+    }
+    return false;
+  };
+
+  // Determine if the array or object contains a given item (using `===`).
+  // Aliased as `includes` and `include`.
+  _.contains = _.includes = _.include = function(obj, item, fromIndex, guard) {
+    if (!isArrayLike(obj)) obj = _.values(obj);
+    if (typeof fromIndex != 'number' || guard) fromIndex = 0;
+    return _.indexOf(obj, item, fromIndex) >= 0;
+  };
+
+  // Invoke a method (with arguments) on every item in a collection.
+  _.invoke = restArguments(function(obj, path, args) {
+    var contextPath, func;
+    if (_.isFunction(path)) {
+      func = path;
+    } else if (_.isArray(path)) {
+      contextPath = path.slice(0, -1);
+      path = path[path.length - 1];
+    }
+    return _.map(obj, function(context) {
+      var method = func;
+      if (!method) {
+        if (contextPath && contextPath.length) {
+          context = deepGet(context, contextPath);
+        }
+        if (context == null) return void 0;
+        method = context[path];
+      }
+      return method == null ? method : method.apply(context, args);
+    });
+  });
+
+  // Convenience version of a common use case of `map`: fetching a property.
+  _.pluck = function(obj, key) {
+    return _.map(obj, _.property(key));
+  };
+
+  // Convenience version of a common use case of `filter`: selecting only objects
+  // containing specific `key:value` pairs.
+  _.where = function(obj, attrs) {
+    return _.filter(obj, _.matcher(attrs));
+  };
+
+  // Convenience version of a common use case of `find`: getting the first object
+  // containing specific `key:value` pairs.
+  _.findWhere = function(obj, attrs) {
+    return _.find(obj, _.matcher(attrs));
+  };
+
+  // Return the maximum element (or element-based computation).
+  _.max = function(obj, iteratee, context) {
+    var result = -Infinity, lastComputed = -Infinity,
+        value, computed;
+    if (iteratee == null || typeof iteratee == 'number' && typeof obj[0] != 'object' && obj != null) {
+      obj = isArrayLike(obj) ? obj : _.values(obj);
+      for (var i = 0, length = obj.length; i < length; i++) {
+        value = obj[i];
+        if (value != null && value > result) {
+          result = value;
+        }
+      }
+    } else {
+      iteratee = cb(iteratee, context);
+      _.each(obj, function(v, index, list) {
+        computed = iteratee(v, index, list);
+        if (computed > lastComputed || computed === -Infinity && result === -Infinity) {
+          result = v;
+          lastComputed = computed;
+        }
+      });
+    }
+    return result;
+  };
+
+  // Return the minimum element (or element-based computation).
+  _.min = function(obj, iteratee, context) {
+    var result = Infinity, lastComputed = Infinity,
+        value, computed;
+    if (iteratee == null || typeof iteratee == 'number' && typeof obj[0] != 'object' && obj != null) {
+      obj = isArrayLike(obj) ? obj : _.values(obj);
+      for (var i = 0, length = obj.length; i < length; i++) {
+        value = obj[i];
+        if (value != null && value < result) {
+          result = value;
+        }
+      }
+    } else {
+      iteratee = cb(iteratee, context);
+      _.each(obj, function(v, index, list) {
+        computed = iteratee(v, index, list);
+        if (computed < lastComputed || computed === Infinity && result === Infinity) {
+          result = v;
+          lastComputed = computed;
+        }
+      });
+    }
+    return result;
+  };
+
+  // Shuffle a collection.
+  _.shuffle = function(obj) {
+    return _.sample(obj, Infinity);
+  };
+
+  // Sample **n** random values from a collection using the modern version of the
+  // [Fisher-Yates shuffle](http://en.wikipedia.org/wiki/Fisher–Yates_shuffle).
+  // If **n** is not specified, returns a single random element.
+  // The internal `guard` argument allows it to work with `map`.
+  _.sample = function(obj, n, guard) {
+    if (n == null || guard) {
+      if (!isArrayLike(obj)) obj = _.values(obj);
+      return obj[_.random(obj.length - 1)];
+    }
+    var sample = isArrayLike(obj) ? _.clone(obj) : _.values(obj);
+    var length = getLength(sample);
+    n = Math.max(Math.min(n, length), 0);
+    var last = length - 1;
+    for (var index = 0; index < n; index++) {
+      var rand = _.random(index, last);
+      var temp = sample[index];
+      sample[index] = sample[rand];
+      sample[rand] = temp;
+    }
+    return sample.slice(0, n);
+  };
+
+  // Sort the object's values by a criterion produced by an iteratee.
+  _.sortBy = function(obj, iteratee, context) {
+    var index = 0;
+    iteratee = cb(iteratee, context);
+    return _.pluck(_.map(obj, function(value, key, list) {
+      return {
+        value: value,
+        index: index++,
+        criteria: iteratee(value, key, list)
+      };
+    }).sort(function(left, right) {
+      var a = left.criteria;
+      var b = right.criteria;
+      if (a !== b) {
+        if (a > b || a === void 0) return 1;
+        if (a < b || b === void 0) return -1;
+      }
+      return left.index - right.index;
+    }), 'value');
+  };
+
+  // An internal function used for aggregate "group by" operations.
+  var group = function(behavior, partition) {
+    return function(obj, iteratee, context) {
+      var result = partition ? [[], []] : {};
+      iteratee = cb(iteratee, context);
+      _.each(obj, function(value, index) {
+        var key = iteratee(value, index, obj);
+        behavior(result, value, key);
+      });
+      return result;
+    };
+  };
+
+  // Groups the object's values by a criterion. Pass either a string attribute
+  // to group by, or a function that returns the criterion.
+  _.groupBy = group(function(result, value, key) {
+    if (has(result, key)) result[key].push(value); else result[key] = [value];
+  });
+
+  // Indexes the object's values by a criterion, similar to `groupBy`, but for
+  // when you know that your index values will be unique.
+  _.indexBy = group(function(result, value, key) {
+    result[key] = value;
+  });
+
+  // Counts instances of an object that group by a certain criterion. Pass
+  // either a string attribute to count by, or a function that returns the
+  // criterion.
+  _.countBy = group(function(result, value, key) {
+    if (has(result, key)) result[key]++; else result[key] = 1;
+  });
+
+  var reStrSymbol = /[^\ud800-\udfff]|[\ud800-\udbff][\udc00-\udfff]|[\ud800-\udfff]/g;
+  // Safely create a real, live array from anything iterable.
+  _.toArray = function(obj) {
+    if (!obj) return [];
+    if (_.isArray(obj)) return slice.call(obj);
+    if (_.isString(obj)) {
+      // Keep surrogate pair characters together
+      return obj.match(reStrSymbol);
+    }
+    if (isArrayLike(obj)) return _.map(obj, _.identity);
+    return _.values(obj);
+  };
+
+  // Return the number of elements in an object.
+  _.size = function(obj) {
+    if (obj == null) return 0;
+    return isArrayLike(obj) ? obj.length : _.keys(obj).length;
+  };
+
+  // Split a collection into two arrays: one whose elements all satisfy the given
+  // predicate, and one whose elements all do not satisfy the predicate.
+  _.partition = group(function(result, value, pass) {
+    result[pass ? 0 : 1].push(value);
+  }, true);
+
+  // Array Functions
+  // ---------------
+
+  // Get the first element of an array. Passing **n** will return the first N
+  // values in the array. Aliased as `head` and `take`. The **guard** check
+  // allows it to work with `_.map`.
+  _.first = _.head = _.take = function(array, n, guard) {
+    if (array == null || array.length < 1) return n == null ? void 0 : [];
+    if (n == null || guard) return array[0];
+    return _.initial(array, array.length - n);
+  };
+
+  // Returns everything but the last entry of the array. Especially useful on
+  // the arguments object. Passing **n** will return all the values in
+  // the array, excluding the last N.
+  _.initial = function(array, n, guard) {
+    return slice.call(array, 0, Math.max(0, array.length - (n == null || guard ? 1 : n)));
+  };
+
+  // Get the last element of an array. Passing **n** will return the last N
+  // values in the array.
+  _.last = function(array, n, guard) {
+    if (array == null || array.length < 1) return n == null ? void 0 : [];
+    if (n == null || guard) return array[array.length - 1];
+    return _.rest(array, Math.max(0, array.length - n));
+  };
+
+  // Returns everything but the first entry of the array. Aliased as `tail` and `drop`.
+  // Especially useful on the arguments object. Passing an **n** will return
+  // the rest N values in the array.
+  _.rest = _.tail = _.drop = function(array, n, guard) {
+    return slice.call(array, n == null || guard ? 1 : n);
+  };
+
+  // Trim out all falsy values from an array.
+  _.compact = function(array) {
+    return _.filter(array, Boolean);
+  };
+
+  // Internal implementation of a recursive `flatten` function.
+  var flatten = function(input, shallow, strict, output) {
+    output = output || [];
+    var idx = output.length;
+    for (var i = 0, length = getLength(input); i < length; i++) {
+      var value = input[i];
+      if (isArrayLike(value) && (_.isArray(value) || _.isArguments(value))) {
+        // Flatten current level of array or arguments object.
+        if (shallow) {
+          var j = 0, len = value.length;
+          while (j < len) output[idx++] = value[j++];
+        } else {
+          flatten(value, shallow, strict, output);
+          idx = output.length;
+        }
+      } else if (!strict) {
+        output[idx++] = value;
+      }
+    }
+    return output;
+  };
+
+  // Flatten out an array, either recursively (by default), or just one level.
+  _.flatten = function(array, shallow) {
+    return flatten(array, shallow, false);
+  };
+
+  // Return a version of the array that does not contain the specified value(s).
+  _.without = restArguments(function(array, otherArrays) {
+    return _.difference(array, otherArrays);
+  });
+
+  // Produce a duplicate-free version of the array. If the array has already
+  // been sorted, you have the option of using a faster algorithm.
+  // The faster algorithm will not work with an iteratee if the iteratee
+  // is not a one-to-one function, so providing an iteratee will disable
+  // the faster algorithm.
+  // Aliased as `unique`.
+  _.uniq = _.unique = function(array, isSorted, iteratee, context) {
+    if (!_.isBoolean(isSorted)) {
+      context = iteratee;
+      iteratee = isSorted;
+      isSorted = false;
+    }
+    if (iteratee != null) iteratee = cb(iteratee, context);
+    var result = [];
+    var seen = [];
+    for (var i = 0, length = getLength(array); i < length; i++) {
+      var value = array[i],
+          computed = iteratee ? iteratee(value, i, array) : value;
+      if (isSorted && !iteratee) {
+        if (!i || seen !== computed) result.push(value);
+        seen = computed;
+      } else if (iteratee) {
+        if (!_.contains(seen, computed)) {
+          seen.push(computed);
+          result.push(value);
+        }
+      } else if (!_.contains(result, value)) {
+        result.push(value);
+      }
+    }
+    return result;
+  };
+
+  // Produce an array that contains the union: each distinct element from all of
+  // the passed-in arrays.
+  _.union = restArguments(function(arrays) {
+    return _.uniq(flatten(arrays, true, true));
+  });
+
+  // Produce an array that contains every item shared between all the
+  // passed-in arrays.
+  _.intersection = function(array) {
+    var result = [];
+    var argsLength = arguments.length;
+    for (var i = 0, length = getLength(array); i < length; i++) {
+      var item = array[i];
+      if (_.contains(result, item)) continue;
+      var j;
+      for (j = 1; j < argsLength; j++) {
+        if (!_.contains(arguments[j], item)) break;
+      }
+      if (j === argsLength) result.push(item);
+    }
+    return result;
+  };
+
+  // Take the difference between one array and a number of other arrays.
+  // Only the elements present in just the first array will remain.
+  _.difference = restArguments(function(array, rest) {
+    rest = flatten(rest, true, true);
+    return _.filter(array, function(value){
+      return !_.contains(rest, value);
+    });
+  });
+
+  // Complement of _.zip. Unzip accepts an array of arrays and groups
+  // each array's elements on shared indices.
+  _.unzip = function(array) {
+    var length = array && _.max(array, getLength).length || 0;
+    var result = Array(length);
+
+    for (var index = 0; index < length; index++) {
+      result[index] = _.pluck(array, index);
+    }
+    return result;
+  };
+
+  // Zip together multiple lists into a single array -- elements that share
+  // an index go together.
+  _.zip = restArguments(_.unzip);
+
+  // Converts lists into objects. Pass either a single array of `[key, value]`
+  // pairs, or two parallel arrays of the same length -- one of keys, and one of
+  // the corresponding values. Passing by pairs is the reverse of _.pairs.
+  _.object = function(list, values) {
+    var result = {};
+    for (var i = 0, length = getLength(list); i < length; i++) {
+      if (values) {
+        result[list[i]] = values[i];
+      } else {
+        result[list[i][0]] = list[i][1];
+      }
+    }
+    return result;
+  };
+
+  // Generator function to create the findIndex and findLastIndex functions.
+  var createPredicateIndexFinder = function(dir) {
+    return function(array, predicate, context) {
+      predicate = cb(predicate, context);
+      var length = getLength(array);
+      var index = dir > 0 ? 0 : length - 1;
+      for (; index >= 0 && index < length; index += dir) {
+        if (predicate(array[index], index, array)) return index;
+      }
+      return -1;
+    };
+  };
+
+  // Returns the first index on an array-like that passes a predicate test.
+  _.findIndex = createPredicateIndexFinder(1);
+  _.findLastIndex = createPredicateIndexFinder(-1);
+
+  // Use a comparator function to figure out the smallest index at which
+  // an object should be inserted so as to maintain order. Uses binary search.
+  _.sortedIndex = function(array, obj, iteratee, context) {
+    iteratee = cb(iteratee, context, 1);
+    var value = iteratee(obj);
+    var low = 0, high = getLength(array);
+    while (low < high) {
+      var mid = Math.floor((low + high) / 2);
+      if (iteratee(array[mid]) < value) low = mid + 1; else high = mid;
+    }
+    return low;
+  };
+
+  // Generator function to create the indexOf and lastIndexOf functions.
+  var createIndexFinder = function(dir, predicateFind, sortedIndex) {
+    return function(array, item, idx) {
+      var i = 0, length = getLength(array);
+      if (typeof idx == 'number') {
+        if (dir > 0) {
+          i = idx >= 0 ? idx : Math.max(idx + length, i);
+        } else {
+          length = idx >= 0 ? Math.min(idx + 1, length) : idx + length + 1;
+        }
+      } else if (sortedIndex && idx && length) {
+        idx = sortedIndex(array, item);
+        return array[idx] === item ? idx : -1;
+      }
+      if (item !== item) {
+        idx = predicateFind(slice.call(array, i, length), _.isNaN);
+        return idx >= 0 ? idx + i : -1;
+      }
+      for (idx = dir > 0 ? i : length - 1; idx >= 0 && idx < length; idx += dir) {
+        if (array[idx] === item) return idx;
+      }
+      return -1;
+    };
+  };
+
+  // Return the position of the first occurrence of an item in an array,
+  // or -1 if the item is not included in the array.
+  // If the array is large and already in sort order, pass `true`
+  // for **isSorted** to use binary search.
+  _.indexOf = createIndexFinder(1, _.findIndex, _.sortedIndex);
+  _.lastIndexOf = createIndexFinder(-1, _.findLastIndex);
+
+  // Generate an integer Array containing an arithmetic progression. A port of
+  // the native Python `range()` function. See
+  // [the Python documentation](http://docs.python.org/library/functions.html#range).
+  _.range = function(start, stop, step) {
+    if (stop == null) {
+      stop = start || 0;
+      start = 0;
+    }
+    if (!step) {
+      step = stop < start ? -1 : 1;
+    }
+
+    var length = Math.max(Math.ceil((stop - start) / step), 0);
+    var range = Array(length);
+
+    for (var idx = 0; idx < length; idx++, start += step) {
+      range[idx] = start;
+    }
+
+    return range;
+  };
+
+  // Chunk a single array into multiple arrays, each containing `count` or fewer
+  // items.
+  _.chunk = function(array, count) {
+    if (count == null || count < 1) return [];
+    var result = [];
+    var i = 0, length = array.length;
+    while (i < length) {
+      result.push(slice.call(array, i, i += count));
+    }
+    return result;
+  };
+
+  // Function (ahem) Functions
+  // ------------------
+
+  // Determines whether to execute a function as a constructor
+  // or a normal function with the provided arguments.
+  var executeBound = function(sourceFunc, boundFunc, context, callingContext, args) {
+    if (!(callingContext instanceof boundFunc)) return sourceFunc.apply(context, args);
+    var self = baseCreate(sourceFunc.prototype);
+    var result = sourceFunc.apply(self, args);
+    if (_.isObject(result)) return result;
+    return self;
+  };
+
+  // Create a function bound to a given object (assigning `this`, and arguments,
+  // optionally). Delegates to **ECMAScript 5**'s native `Function.bind` if
+  // available.
+  _.bind = restArguments(function(func, context, args) {
+    if (!_.isFunction(func)) throw new TypeError('Bind must be called on a function');
+    var bound = restArguments(function(callArgs) {
+      return executeBound(func, bound, context, this, args.concat(callArgs));
+    });
+    return bound;
+  });
+
+  // Partially apply a function by creating a version that has had some of its
+  // arguments pre-filled, without changing its dynamic `this` context. _ acts
+  // as a placeholder by default, allowing any combination of arguments to be
+  // pre-filled. Set `_.partial.placeholder` for a custom placeholder argument.
+  _.partial = restArguments(function(func, boundArgs) {
+    var placeholder = _.partial.placeholder;
+    var bound = function() {
+      var position = 0, length = boundArgs.length;
+      var args = Array(length);
+      for (var i = 0; i < length; i++) {
+        args[i] = boundArgs[i] === placeholder ? arguments[position++] : boundArgs[i];
+      }
+      while (position < arguments.length) args.push(arguments[position++]);
+      return executeBound(func, bound, this, this, args);
+    };
+    return bound;
+  });
+
+  _.partial.placeholder = _;
+
+  // Bind a number of an object's methods to that object. Remaining arguments
+  // are the method names to be bound. Useful for ensuring that all callbacks
+  // defined on an object belong to it.
+  _.bindAll = restArguments(function(obj, keys) {
+    keys = flatten(keys, false, false);
+    var index = keys.length;
+    if (index < 1) throw new Error('bindAll must be passed function names');
+    while (index--) {
+      var key = keys[index];
+      obj[key] = _.bind(obj[key], obj);
+    }
+  });
+
+  // Memoize an expensive function by storing its results.
+  _.memoize = function(func, hasher) {
+    var memoize = function(key) {
+      var cache = memoize.cache;
+      var address = '' + (hasher ? hasher.apply(this, arguments) : key);
+      if (!has(cache, address)) cache[address] = func.apply(this, arguments);
+      return cache[address];
+    };
+    memoize.cache = {};
+    return memoize;
+  };
+
+  // Delays a function for the given number of milliseconds, and then calls
+  // it with the arguments supplied.
+  _.delay = restArguments(function(func, wait, args) {
+    return setTimeout(function() {
+      return func.apply(null, args);
+    }, wait);
+  });
+
+  // Defers a function, scheduling it to run after the current call stack has
+  // cleared.
+  _.defer = _.partial(_.delay, _, 1);
+
+  // Returns a function, that, when invoked, will only be triggered at most once
+  // during a given window of time. Normally, the throttled function will run
+  // as much as it can, without ever going more than once per `wait` duration;
+  // but if you'd like to disable the execution on the leading edge, pass
+  // `{leading: false}`. To disable execution on the trailing edge, ditto.
+  _.throttle = function(func, wait, options) {
+    var timeout, context, args, result;
+    var previous = 0;
+    if (!options) options = {};
+
+    var later = function() {
+      previous = options.leading === false ? 0 : _.now();
+      timeout = null;
+      result = func.apply(context, args);
+      if (!timeout) context = args = null;
+    };
+
+    var throttled = function() {
+      var now = _.now();
+      if (!previous && options.leading === false) previous = now;
+      var remaining = wait - (now - previous);
+      context = this;
+      args = arguments;
+      if (remaining <= 0 || remaining > wait) {
+        if (timeout) {
+          clearTimeout(timeout);
+          timeout = null;
+        }
+        previous = now;
+        result = func.apply(context, args);
+        if (!timeout) context = args = null;
+      } else if (!timeout && options.trailing !== false) {
+        timeout = setTimeout(later, remaining);
+      }
+      return result;
+    };
+
+    throttled.cancel = function() {
+      clearTimeout(timeout);
+      previous = 0;
+      timeout = context = args = null;
+    };
+
+    return throttled;
+  };
+
+  // Returns a function, that, as long as it continues to be invoked, will not
+  // be triggered. The function will be called after it stops being called for
+  // N milliseconds. If `immediate` is passed, trigger the function on the
+  // leading edge, instead of the trailing.
+  _.debounce = function(func, wait, immediate) {
+    var timeout, result;
+
+    var later = function(context, args) {
+      timeout = null;
+      if (args) result = func.apply(context, args);
+    };
+
+    var debounced = restArguments(function(args) {
+      if (timeout) clearTimeout(timeout);
+      if (immediate) {
+        var callNow = !timeout;
+        timeout = setTimeout(later, wait);
+        if (callNow) result = func.apply(this, args);
+      } else {
+        timeout = _.delay(later, wait, this, args);
+      }
+
+      return result;
+    });
+
+    debounced.cancel = function() {
+      clearTimeout(timeout);
+      timeout = null;
+    };
+
+    return debounced;
+  };
+
+  // Returns the first function passed as an argument to the second,
+  // allowing you to adjust arguments, run code before and after, and
+  // conditionally execute the original function.
+  _.wrap = function(func, wrapper) {
+    return _.partial(wrapper, func);
+  };
+
+  // Returns a negated version of the passed-in predicate.
+  _.negate = function(predicate) {
+    return function() {
+      return !predicate.apply(this, arguments);
+    };
+  };
+
+  // Returns a function that is the composition of a list of functions, each
+  // consuming the return value of the function that follows.
+  _.compose = function() {
+    var args = arguments;
+    var start = args.length - 1;
+    return function() {
+      var i = start;
+      var result = args[start].apply(this, arguments);
+      while (i--) result = args[i].call(this, result);
+      return result;
+    };
+  };
+
+  // Returns a function that will only be executed on and after the Nth call.
+  _.after = function(times, func) {
+    return function() {
+      if (--times < 1) {
+        return func.apply(this, arguments);
+      }
+    };
+  };
+
+  // Returns a function that will only be executed up to (but not including) the Nth call.
+  _.before = function(times, func) {
+    var memo;
+    return function() {
+      if (--times > 0) {
+        memo = func.apply(this, arguments);
+      }
+      if (times <= 1) func = null;
+      return memo;
+    };
+  };
+
+  // Returns a function that will be executed at most one time, no matter how
+  // often you call it. Useful for lazy initialization.
+  _.once = _.partial(_.before, 2);
+
+  _.restArguments = restArguments;
+
+  // Object Functions
+  // ----------------
+
+  // Keys in IE < 9 that won't be iterated by `for key in ...` and thus missed.
+  var hasEnumBug = !{toString: null}.propertyIsEnumerable('toString');
+  var nonEnumerableProps = ['valueOf', 'isPrototypeOf', 'toString',
+    'propertyIsEnumerable', 'hasOwnProperty', 'toLocaleString'];
+
+  var collectNonEnumProps = function(obj, keys) {
+    var nonEnumIdx = nonEnumerableProps.length;
+    var constructor = obj.constructor;
+    var proto = _.isFunction(constructor) && constructor.prototype || ObjProto;
+
+    // Constructor is a special case.
+    var prop = 'constructor';
+    if (has(obj, prop) && !_.contains(keys, prop)) keys.push(prop);
+
+    while (nonEnumIdx--) {
+      prop = nonEnumerableProps[nonEnumIdx];
+      if (prop in obj && obj[prop] !== proto[prop] && !_.contains(keys, prop)) {
+        keys.push(prop);
+      }
+    }
+  };
+
+  // Retrieve the names of an object's own properties.
+  // Delegates to **ECMAScript 5**'s native `Object.keys`.
+  _.keys = function(obj) {
+    if (!_.isObject(obj)) return [];
+    if (nativeKeys) return nativeKeys(obj);
+    var keys = [];
+    for (var key in obj) if (has(obj, key)) keys.push(key);
+    // Ahem, IE < 9.
+    if (hasEnumBug) collectNonEnumProps(obj, keys);
+    return keys;
+  };
+
+  // Retrieve all the property names of an object.
+  _.allKeys = function(obj) {
+    if (!_.isObject(obj)) return [];
+    var keys = [];
+    for (var key in obj) keys.push(key);
+    // Ahem, IE < 9.
+    if (hasEnumBug) collectNonEnumProps(obj, keys);
+    return keys;
+  };
+
+  // Retrieve the values of an object's properties.
+  _.values = function(obj) {
+    var keys = _.keys(obj);
+    var length = keys.length;
+    var values = Array(length);
+    for (var i = 0; i < length; i++) {
+      values[i] = obj[keys[i]];
+    }
+    return values;
+  };
+
+  // Returns the results of applying the iteratee to each element of the object.
+  // In contrast to _.map it returns an object.
+  _.mapObject = function(obj, iteratee, context) {
+    iteratee = cb(iteratee, context);
+    var keys = _.keys(obj),
+        length = keys.length,
+        results = {};
+    for (var index = 0; index < length; index++) {
+      var currentKey = keys[index];
+      results[currentKey] = iteratee(obj[currentKey], currentKey, obj);
+    }
+    return results;
+  };
+
+  // Convert an object into a list of `[key, value]` pairs.
+  // The opposite of _.object.
+  _.pairs = function(obj) {
+    var keys = _.keys(obj);
+    var length = keys.length;
+    var pairs = Array(length);
+    for (var i = 0; i < length; i++) {
+      pairs[i] = [keys[i], obj[keys[i]]];
+    }
+    return pairs;
+  };
+
+  // Invert the keys and values of an object. The values must be serializable.
+  _.invert = function(obj) {
+    var result = {};
+    var keys = _.keys(obj);
+    for (var i = 0, length = keys.length; i < length; i++) {
+      result[obj[keys[i]]] = keys[i];
+    }
+    return result;
+  };
+
+  // Return a sorted list of the function names available on the object.
+  // Aliased as `methods`.
+  _.functions = _.methods = function(obj) {
+    var names = [];
+    for (var key in obj) {
+      if (_.isFunction(obj[key])) names.push(key);
+    }
+    return names.sort();
+  };
+
+  // An internal function for creating assigner functions.
+  var createAssigner = function(keysFunc, defaults) {
+    return function(obj) {
+      var length = arguments.length;
+      if (defaults) obj = Object(obj);
+      if (length < 2 || obj == null) return obj;
+      for (var index = 1; index < length; index++) {
+        var source = arguments[index],
+            keys = keysFunc(source),
+            l = keys.length;
+        for (var i = 0; i < l; i++) {
+          var key = keys[i];
+          if (!defaults || obj[key] === void 0) obj[key] = source[key];
+        }
+      }
+      return obj;
+    };
+  };
+
+  // Extend a given object with all the properties in passed-in object(s).
+  _.extend = createAssigner(_.allKeys);
+
+  // Assigns a given object with all the own properties in the passed-in object(s).
+  // (https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object/assign)
+  _.extendOwn = _.assign = createAssigner(_.keys);
+
+  // Returns the first key on an object that passes a predicate test.
+  _.findKey = function(obj, predicate, context) {
+    predicate = cb(predicate, context);
+    var keys = _.keys(obj), key;
+    for (var i = 0, length = keys.length; i < length; i++) {
+      key = keys[i];
+      if (predicate(obj[key], key, obj)) return key;
+    }
+  };
+
+  // Internal pick helper function to determine if `obj` has key `key`.
+  var keyInObj = function(value, key, obj) {
+    return key in obj;
+  };
+
+  // Return a copy of the object only containing the whitelisted properties.
+  _.pick = restArguments(function(obj, keys) {
+    var result = {}, iteratee = keys[0];
+    if (obj == null) return result;
+    if (_.isFunction(iteratee)) {
+      if (keys.length > 1) iteratee = optimizeCb(iteratee, keys[1]);
+      keys = _.allKeys(obj);
+    } else {
+      iteratee = keyInObj;
+      keys = flatten(keys, false, false);
+      obj = Object(obj);
+    }
+    for (var i = 0, length = keys.length; i < length; i++) {
+      var key = keys[i];
+      var value = obj[key];
+      if (iteratee(value, key, obj)) result[key] = value;
+    }
+    return result;
+  });
+
+  // Return a copy of the object without the blacklisted properties.
+  _.omit = restArguments(function(obj, keys) {
+    var iteratee = keys[0], context;
+    if (_.isFunction(iteratee)) {
+      iteratee = _.negate(iteratee);
+      if (keys.length > 1) context = keys[1];
+    } else {
+      keys = _.map(flatten(keys, false, false), String);
+      iteratee = function(value, key) {
+        return !_.contains(keys, key);
+      };
+    }
+    return _.pick(obj, iteratee, context);
+  });
+
+  // Fill in a given object with default properties.
+  _.defaults = createAssigner(_.allKeys, true);
+
+  // Creates an object that inherits from the given prototype object.
+  // If additional properties are provided then they will be added to the
+  // created object.
+  _.create = function(prototype, props) {
+    var result = baseCreate(prototype);
+    if (props) _.extendOwn(result, props);
+    return result;
+  };
+
+  // Create a (shallow-cloned) duplicate of an object.
+  _.clone = function(obj) {
+    if (!_.isObject(obj)) return obj;
+    return _.isArray(obj) ? obj.slice() : _.extend({}, obj);
+  };
+
+  // Invokes interceptor with the obj, and then returns obj.
+  // The primary purpose of this method is to "tap into" a method chain, in
+  // order to perform operations on intermediate results within the chain.
+  _.tap = function(obj, interceptor) {
+    interceptor(obj);
+    return obj;
+  };
+
+  // Returns whether an object has a given set of `key:value` pairs.
+  _.isMatch = function(object, attrs) {
+    var keys = _.keys(attrs), length = keys.length;
+    if (object == null) return !length;
+    var obj = Object(object);
+    for (var i = 0; i < length; i++) {
+      var key = keys[i];
+      if (attrs[key] !== obj[key] || !(key in obj)) return false;
+    }
+    return true;
+  };
+
+
+  // Internal recursive comparison function for `isEqual`.
+  var eq, deepEq;
+  eq = function(a, b, aStack, bStack) {
+    // Identical objects are equal. `0 === -0`, but they aren't identical.
+    // See the [Harmony `egal` proposal](http://wiki.ecmascript.org/doku.php?id=harmony:egal).
+    if (a === b) return a !== 0 || 1 / a === 1 / b;
+    // `null` or `undefined` only equal to itself (strict comparison).
+    if (a == null || b == null) return false;
+    // `NaN`s are equivalent, but non-reflexive.
+    if (a !== a) return b !== b;
+    // Exhaust primitive checks
+    var type = typeof a;
+    if (type !== 'function' && type !== 'object' && typeof b != 'object') return false;
+    return deepEq(a, b, aStack, bStack);
+  };
+
+  // Internal recursive comparison function for `isEqual`.
+  deepEq = function(a, b, aStack, bStack) {
+    // Unwrap any wrapped objects.
+    if (a instanceof _) a = a._wrapped;
+    if (b instanceof _) b = b._wrapped;
+    // Compare `[[Class]]` names.
+    var className = toString.call(a);
+    if (className !== toString.call(b)) return false;
+    switch (className) {
+      // Strings, numbers, regular expressions, dates, and booleans are compared by value.
+      case '[object RegExp]':
+      // RegExps are coerced to strings for comparison (Note: '' + /a/i === '/a/i')
+      case '[object String]':
+        // Primitives and their corresponding object wrappers are equivalent; thus, `"5"` is
+        // equivalent to `new String("5")`.
+        return '' + a === '' + b;
+      case '[object Number]':
+        // `NaN`s are equivalent, but non-reflexive.
+        // Object(NaN) is equivalent to NaN.
+        if (+a !== +a) return +b !== +b;
+        // An `egal` comparison is performed for other numeric values.
+        return +a === 0 ? 1 / +a === 1 / b : +a === +b;
+      case '[object Date]':
+      case '[object Boolean]':
+        // Coerce dates and booleans to numeric primitive values. Dates are compared by their
+        // millisecond representations. Note that invalid dates with millisecond representations
+        // of `NaN` are not equivalent.
+        return +a === +b;
+      case '[object Symbol]':
+        return SymbolProto.valueOf.call(a) === SymbolProto.valueOf.call(b);
+    }
+
+    var areArrays = className === '[object Array]';
+    if (!areArrays) {
+      if (typeof a != 'object' || typeof b != 'object') return false;
+
+      // Objects with different constructors are not equivalent, but `Object`s or `Array`s
+      // from different frames are.
+      var aCtor = a.constructor, bCtor = b.constructor;
+      if (aCtor !== bCtor && !(_.isFunction(aCtor) && aCtor instanceof aCtor &&
+                               _.isFunction(bCtor) && bCtor instanceof bCtor)
+                          && ('constructor' in a && 'constructor' in b)) {
+        return false;
+      }
+    }
+    // Assume equality for cyclic structures. The algorithm for detecting cyclic
+    // structures is adapted from ES 5.1 section 15.12.3, abstract operation `JO`.
+
+    // Initializing stack of traversed objects.
+    // It's done here since we only need them for objects and arrays comparison.
+    aStack = aStack || [];
+    bStack = bStack || [];
+    var length = aStack.length;
+    while (length--) {
+      // Linear search. Performance is inversely proportional to the number of
+      // unique nested structures.
+      if (aStack[length] === a) return bStack[length] === b;
+    }
+
+    // Add the first object to the stack of traversed objects.
+    aStack.push(a);
+    bStack.push(b);
+
+    // Recursively compare objects and arrays.
+    if (areArrays) {
+      // Compare array lengths to determine if a deep comparison is necessary.
+      length = a.length;
+      if (length !== b.length) return false;
+      // Deep compare the contents, ignoring non-numeric properties.
+      while (length--) {
+        if (!eq(a[length], b[length], aStack, bStack)) return false;
+      }
+    } else {
+      // Deep compare objects.
+      var keys = _.keys(a), key;
+      length = keys.length;
+      // Ensure that both objects contain the same number of properties before comparing deep equality.
+      if (_.keys(b).length !== length) return false;
+      while (length--) {
+        // Deep compare each member
+        key = keys[length];
+        if (!(has(b, key) && eq(a[key], b[key], aStack, bStack))) return false;
+      }
+    }
+    // Remove the first object from the stack of traversed objects.
+    aStack.pop();
+    bStack.pop();
+    return true;
+  };
+
+  // Perform a deep comparison to check if two objects are equal.
+  _.isEqual = function(a, b) {
+    return eq(a, b);
+  };
+
+  // Is a given array, string, or object empty?
+  // An "empty" object has no enumerable own-properties.
+  _.isEmpty = function(obj) {
+    if (obj == null) return true;
+    if (isArrayLike(obj) && (_.isArray(obj) || _.isString(obj) || _.isArguments(obj))) return obj.length === 0;
+    return _.keys(obj).length === 0;
+  };
+
+  // Is a given value a DOM element?
+  _.isElement = function(obj) {
+    return !!(obj && obj.nodeType === 1);
+  };
+
+  // Is a given value an array?
+  // Delegates to ECMA5's native Array.isArray
+  _.isArray = nativeIsArray || function(obj) {
+    return toString.call(obj) === '[object Array]';
+  };
+
+  // Is a given variable an object?
+  _.isObject = function(obj) {
+    var type = typeof obj;
+    return type === 'function' || type === 'object' && !!obj;
+  };
+
+  // Add some isType methods: isArguments, isFunction, isString, isNumber, isDate, isRegExp, isError, isMap, isWeakMap, isSet, isWeakSet.
+  _.each(['Arguments', 'Function', 'String', 'Number', 'Date', 'RegExp', 'Error', 'Symbol', 'Map', 'WeakMap', 'Set', 'WeakSet'], function(name) {
+    _['is' + name] = function(obj) {
+      return toString.call(obj) === '[object ' + name + ']';
+    };
+  });
+
+  // Define a fallback version of the method in browsers (ahem, IE < 9), where
+  // there isn't any inspectable "Arguments" type.
+  if (!_.isArguments(arguments)) {
+    _.isArguments = function(obj) {
+      return has(obj, 'callee');
+    };
+  }
+
+  // Optimize `isFunction` if appropriate. Work around some typeof bugs in old v8,
+  // IE 11 (#1621), Safari 8 (#1929), and PhantomJS (#2236).
+  var nodelist = root.document && root.document.childNodes;
+  if ( true && typeof Int8Array != 'object' && typeof nodelist != 'function') {
+    _.isFunction = function(obj) {
+      return typeof obj == 'function' || false;
+    };
+  }
+
+  // Is a given object a finite number?
+  _.isFinite = function(obj) {
+    return !_.isSymbol(obj) && isFinite(obj) && !isNaN(parseFloat(obj));
+  };
+
+  // Is the given value `NaN`?
+  _.isNaN = function(obj) {
+    return _.isNumber(obj) && isNaN(obj);
+  };
+
+  // Is a given value a boolean?
+  _.isBoolean = function(obj) {
+    return obj === true || obj === false || toString.call(obj) === '[object Boolean]';
+  };
+
+  // Is a given value equal to null?
+  _.isNull = function(obj) {
+    return obj === null;
+  };
+
+  // Is a given variable undefined?
+  _.isUndefined = function(obj) {
+    return obj === void 0;
+  };
+
+  // Shortcut function for checking if an object has a given property directly
+  // on itself (in other words, not on a prototype).
+  _.has = function(obj, path) {
+    if (!_.isArray(path)) {
+      return has(obj, path);
+    }
+    var length = path.length;
+    for (var i = 0; i < length; i++) {
+      var key = path[i];
+      if (obj == null || !hasOwnProperty.call(obj, key)) {
+        return false;
+      }
+      obj = obj[key];
+    }
+    return !!length;
+  };
+
+  // Utility Functions
+  // -----------------
+
+  // Run Underscore.js in *noConflict* mode, returning the `_` variable to its
+  // previous owner. Returns a reference to the Underscore object.
+  _.noConflict = function() {
+    root._ = previousUnderscore;
+    return this;
+  };
+
+  // Keep the identity function around for default iteratees.
+  _.identity = function(value) {
+    return value;
+  };
+
+  // Predicate-generating functions. Often useful outside of Underscore.
+  _.constant = function(value) {
+    return function() {
+      return value;
+    };
+  };
+
+  _.noop = function(){};
+
+  // Creates a function that, when passed an object, will traverse that object’s
+  // properties down the given `path`, specified as an array of keys or indexes.
+  _.property = function(path) {
+    if (!_.isArray(path)) {
+      return shallowProperty(path);
+    }
+    return function(obj) {
+      return deepGet(obj, path);
+    };
+  };
+
+  // Generates a function for a given object that returns a given property.
+  _.propertyOf = function(obj) {
+    if (obj == null) {
+      return function(){};
+    }
+    return function(path) {
+      return !_.isArray(path) ? obj[path] : deepGet(obj, path);
+    };
+  };
+
+  // Returns a predicate for checking whether an object has a given set of
+  // `key:value` pairs.
+  _.matcher = _.matches = function(attrs) {
+    attrs = _.extendOwn({}, attrs);
+    return function(obj) {
+      return _.isMatch(obj, attrs);
+    };
+  };
+
+  // Run a function **n** times.
+  _.times = function(n, iteratee, context) {
+    var accum = Array(Math.max(0, n));
+    iteratee = optimizeCb(iteratee, context, 1);
+    for (var i = 0; i < n; i++) accum[i] = iteratee(i);
+    return accum;
+  };
+
+  // Return a random integer between min and max (inclusive).
+  _.random = function(min, max) {
+    if (max == null) {
+      max = min;
+      min = 0;
+    }
+    return min + Math.floor(Math.random() * (max - min + 1));
+  };
+
+  // A (possibly faster) way to get the current timestamp as an integer.
+  _.now = Date.now || function() {
+    return new Date().getTime();
+  };
+
+  // List of HTML entities for escaping.
+  var escapeMap = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#x27;',
+    '`': '&#x60;'
+  };
+  var unescapeMap = _.invert(escapeMap);
+
+  // Functions for escaping and unescaping strings to/from HTML interpolation.
+  var createEscaper = function(map) {
+    var escaper = function(match) {
+      return map[match];
+    };
+    // Regexes for identifying a key that needs to be escaped.
+    var source = '(?:' + _.keys(map).join('|') + ')';
+    var testRegexp = RegExp(source);
+    var replaceRegexp = RegExp(source, 'g');
+    return function(string) {
+      string = string == null ? '' : '' + string;
+      return testRegexp.test(string) ? string.replace(replaceRegexp, escaper) : string;
+    };
+  };
+  _.escape = createEscaper(escapeMap);
+  _.unescape = createEscaper(unescapeMap);
+
+  // Traverses the children of `obj` along `path`. If a child is a function, it
+  // is invoked with its parent as context. Returns the value of the final
+  // child, or `fallback` if any child is undefined.
+  _.result = function(obj, path, fallback) {
+    if (!_.isArray(path)) path = [path];
+    var length = path.length;
+    if (!length) {
+      return _.isFunction(fallback) ? fallback.call(obj) : fallback;
+    }
+    for (var i = 0; i < length; i++) {
+      var prop = obj == null ? void 0 : obj[path[i]];
+      if (prop === void 0) {
+        prop = fallback;
+        i = length; // Ensure we don't continue iterating.
+      }
+      obj = _.isFunction(prop) ? prop.call(obj) : prop;
+    }
+    return obj;
+  };
+
+  // Generate a unique integer id (unique within the entire client session).
+  // Useful for temporary DOM ids.
+  var idCounter = 0;
+  _.uniqueId = function(prefix) {
+    var id = ++idCounter + '';
+    return prefix ? prefix + id : id;
+  };
+
+  // By default, Underscore uses ERB-style template delimiters, change the
+  // following template settings to use alternative delimiters.
+  _.templateSettings = {
+    evaluate: /<%([\s\S]+?)%>/g,
+    interpolate: /<%=([\s\S]+?)%>/g,
+    escape: /<%-([\s\S]+?)%>/g
+  };
+
+  // When customizing `templateSettings`, if you don't want to define an
+  // interpolation, evaluation or escaping regex, we need one that is
+  // guaranteed not to match.
+  var noMatch = /(.)^/;
+
+  // Certain characters need to be escaped so that they can be put into a
+  // string literal.
+  var escapes = {
+    "'": "'",
+    '\\': '\\',
+    '\r': 'r',
+    '\n': 'n',
+    '\u2028': 'u2028',
+    '\u2029': 'u2029'
+  };
+
+  var escapeRegExp = /\\|'|\r|\n|\u2028|\u2029/g;
+
+  var escapeChar = function(match) {
+    return '\\' + escapes[match];
+  };
+
+  // JavaScript micro-templating, similar to John Resig's implementation.
+  // Underscore templating handles arbitrary delimiters, preserves whitespace,
+  // and correctly escapes quotes within interpolated code.
+  // NB: `oldSettings` only exists for backwards compatibility.
+  _.template = function(text, settings, oldSettings) {
+    if (!settings && oldSettings) settings = oldSettings;
+    settings = _.defaults({}, settings, _.templateSettings);
+
+    // Combine delimiters into one regular expression via alternation.
+    var matcher = RegExp([
+      (settings.escape || noMatch).source,
+      (settings.interpolate || noMatch).source,
+      (settings.evaluate || noMatch).source
+    ].join('|') + '|$', 'g');
+
+    // Compile the template source, escaping string literals appropriately.
+    var index = 0;
+    var source = "__p+='";
+    text.replace(matcher, function(match, escape, interpolate, evaluate, offset) {
+      source += text.slice(index, offset).replace(escapeRegExp, escapeChar);
+      index = offset + match.length;
+
+      if (escape) {
+        source += "'+\n((__t=(" + escape + "))==null?'':_.escape(__t))+\n'";
+      } else if (interpolate) {
+        source += "'+\n((__t=(" + interpolate + "))==null?'':__t)+\n'";
+      } else if (evaluate) {
+        source += "';\n" + evaluate + "\n__p+='";
+      }
+
+      // Adobe VMs need the match returned to produce the correct offset.
+      return match;
+    });
+    source += "';\n";
+
+    // If a variable is not specified, place data values in local scope.
+    if (!settings.variable) source = 'with(obj||{}){\n' + source + '}\n';
+
+    source = "var __t,__p='',__j=Array.prototype.join," +
+      "print=function(){__p+=__j.call(arguments,'');};\n" +
+      source + 'return __p;\n';
+
+    var render;
+    try {
+      render = new Function(settings.variable || 'obj', '_', source);
+    } catch (e) {
+      e.source = source;
+      throw e;
+    }
+
+    var template = function(data) {
+      return render.call(this, data, _);
+    };
+
+    // Provide the compiled source as a convenience for precompilation.
+    var argument = settings.variable || 'obj';
+    template.source = 'function(' + argument + '){\n' + source + '}';
+
+    return template;
+  };
+
+  // Add a "chain" function. Start chaining a wrapped Underscore object.
+  _.chain = function(obj) {
+    var instance = _(obj);
+    instance._chain = true;
+    return instance;
+  };
+
+  // OOP
+  // ---------------
+  // If Underscore is called as a function, it returns a wrapped object that
+  // can be used OO-style. This wrapper holds altered versions of all the
+  // underscore functions. Wrapped objects may be chained.
+
+  // Helper function to continue chaining intermediate results.
+  var chainResult = function(instance, obj) {
+    return instance._chain ? _(obj).chain() : obj;
+  };
+
+  // Add your own custom functions to the Underscore object.
+  _.mixin = function(obj) {
+    _.each(_.functions(obj), function(name) {
+      var func = _[name] = obj[name];
+      _.prototype[name] = function() {
+        var args = [this._wrapped];
+        push.apply(args, arguments);
+        return chainResult(this, func.apply(_, args));
+      };
+    });
+    return _;
+  };
+
+  // Add all of the Underscore functions to the wrapper object.
+  _.mixin(_);
+
+  // Add all mutator Array functions to the wrapper.
+  _.each(['pop', 'push', 'reverse', 'shift', 'sort', 'splice', 'unshift'], function(name) {
+    var method = ArrayProto[name];
+    _.prototype[name] = function() {
+      var obj = this._wrapped;
+      method.apply(obj, arguments);
+      if ((name === 'shift' || name === 'splice') && obj.length === 0) delete obj[0];
+      return chainResult(this, obj);
+    };
+  });
+
+  // Add all accessor Array functions to the wrapper.
+  _.each(['concat', 'join', 'slice'], function(name) {
+    var method = ArrayProto[name];
+    _.prototype[name] = function() {
+      return chainResult(this, method.apply(this._wrapped, arguments));
+    };
+  });
+
+  // Extracts the result from a wrapped and chained object.
+  _.prototype.value = function() {
+    return this._wrapped;
+  };
+
+  // Provide unwrapping proxy for some methods used in engine operations
+  // such as arithmetic and JSON stringification.
+  _.prototype.valueOf = _.prototype.toJSON = _.prototype.value;
+
+  _.prototype.toString = function() {
+    return String(this._wrapped);
+  };
+
+  // AMD registration happens at the end for compatibility with AMD loaders
+  // that may not enforce next-turn semantics on modules. Even though general
+  // practice for AMD registration is to be anonymous, underscore registers
+  // as a named module because, like jQuery, it is a base library that is
+  // popular enough to be bundled in a third party lib, but not be part of
+  // an AMD load request. Those cases could generate an error when an
+  // anonymous define() is called outside of a loader request.
+  if (true) {
+    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = (function() {
+      return _;
+    }).apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
+				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+  }
+}());
+
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../../webpack/buildin/global.js */ "./node_modules/webpack/buildin/global.js"), __webpack_require__(/*! ./../../../../../webpack/buildin/module.js */ "./node_modules/webpack/buildin/module.js")(module)))
 
 /***/ }),
 
@@ -11150,7 +12855,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;
       viewChanged: false,      // Flag that indicates that lines might need to be redrawn
       startHeight: cm.doc.height, // Used to detect need to update scrollbar
       forceUpdate: false,      // Used to force a redraw
-      updateInput: null,       // Whether to reset the input textarea
+      updateInput: 0,       // Whether to reset the input textarea
       typing: false,           // Whether this reset should be careful to leave existing text (for compositing)
       changeObjs: null,        // Accumulated changes, for firing change events
       cursorActivityHandlers: null, // Set of handlers to fire cursorActivity on
@@ -12499,7 +14204,8 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;
     doc.sel = sel;
 
     if (doc.cm) {
-      doc.cm.curOp.updateInput = doc.cm.curOp.selectionChanged = true;
+      doc.cm.curOp.updateInput = 1;
+      doc.cm.curOp.selectionChanged = true;
       signalCursorActivity(doc.cm);
     }
     signalLater(doc, "cursorActivity", doc);
@@ -12611,7 +14317,10 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;
     signal(doc, "beforeChange", doc, obj);
     if (doc.cm) { signal(doc.cm, "beforeChange", doc.cm, obj); }
 
-    if (obj.canceled) { return null }
+    if (obj.canceled) {
+      if (doc.cm) { doc.cm.curOp.updateInput = 2; }
+      return null
+    }
     return {from: obj.from, to: obj.to, text: obj.text, origin: obj.origin}
   }
 
@@ -15087,6 +16796,8 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;
       throw new Error("inputStyle can not (yet) be changed in a running editor") // FIXME
     }, true);
     option("spellcheck", false, function (cm, val) { return cm.getInputField().spellcheck = val; }, true);
+    option("autocorrect", false, function (cm, val) { return cm.getInputField().autocorrect = val; }, true);
+    option("autocapitalize", false, function (cm, val) { return cm.getInputField().autocapitalize = val; }, true);
     option("rtlMoveVisually", !windows);
     option("wholeLineUpdateBefore", true);
 
@@ -15483,7 +17194,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;
       }
     }
 
-    var updateInput;
+    var updateInput = cm.curOp.updateInput;
     // Normal behavior is to insert the new text into every selection
     for (var i$1 = sel.ranges.length - 1; i$1 >= 0; i$1--) {
       var range$$1 = sel.ranges[i$1];
@@ -15496,7 +17207,6 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;
         else if (paste && lastCopied && lastCopied.lineWise && lastCopied.text.join("\n") == inserted)
           { from = to = Pos(from.line, 0); }
       }
-      updateInput = cm.curOp.updateInput;
       var changeEvent = {from: from, to: to, text: multiPaste ? multiPaste[i$1 % multiPaste.length] : textLines,
                          origin: origin || (paste ? "paste" : cm.state.cutIncoming ? "cut" : "+input")};
       makeChange(cm.doc, changeEvent);
@@ -15506,7 +17216,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;
       { triggerElectric(cm, inserted); }
 
     ensureCursorVisible(cm);
-    cm.curOp.updateInput = updateInput;
+    if (cm.curOp.updateInput < 2) { cm.curOp.updateInput = updateInput; }
     cm.curOp.typing = true;
     cm.state.pasteIncoming = cm.state.cutIncoming = false;
   }
@@ -15556,9 +17266,9 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;
     return {text: text, ranges: ranges}
   }
 
-  function disableBrowserMagic(field, spellcheck) {
-    field.setAttribute("autocorrect", "off");
-    field.setAttribute("autocapitalize", "off");
+  function disableBrowserMagic(field, spellcheck, autocorrect, autocapitalize) {
+    field.setAttribute("autocorrect", !!autocorrect);
+    field.setAttribute("autocapitalize", !!autocapitalize);
     field.setAttribute("spellcheck", !!spellcheck);
   }
 
@@ -16129,7 +17839,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;
 
     var input = this, cm = input.cm;
     var div = input.div = display.lineDiv;
-    disableBrowserMagic(div, cm.options.spellcheck);
+    disableBrowserMagic(div, cm.options.spellcheck, cm.options.autocorrect, cm.options.autocapitalize);
 
     on(div, "paste", function (e) {
       if (signalDOMEvent(cm, e) || handlePaste(e, cm)) { return }
@@ -16889,6 +18599,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;
 
   TextareaInput.prototype.onContextMenu = function (e) {
     var input = this, cm = input.cm, display = cm.display, te = input.textarea;
+    if (input.contextMenuPending) { input.contextMenuPending(); }
     var pos = posFromMouse(cm, e), scrollPos = display.scroller.scrollTop;
     if (!pos || presto) { return } // Opera is difficult.
 
@@ -16899,8 +18610,8 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;
       { operation(cm, setSelection)(cm.doc, simpleSelection(pos), sel_dontScroll); }
 
     var oldCSS = te.style.cssText, oldWrapperCSS = input.wrapper.style.cssText;
-    input.wrapper.style.cssText = "position: absolute";
-    var wrapperBox = input.wrapper.getBoundingClientRect();
+    var wrapperBox = input.wrapper.offsetParent.getBoundingClientRect();
+    input.wrapper.style.cssText = "position: static";
     te.style.cssText = "position: absolute; width: 30px; height: 30px;\n      top: " + (e.clientY - wrapperBox.top - 5) + "px; left: " + (e.clientX - wrapperBox.left - 5) + "px;\n      z-index: 1000; background: " + (ie ? "rgba(255, 255, 255, .05)" : "transparent") + ";\n      outline: none; border-width: 0; outline: none; overflow: hidden; opacity: .05; filter: alpha(opacity=5);";
     var oldScrollY;
     if (webkit) { oldScrollY = window.scrollY; } // Work around Chrome issue (#2712)
@@ -16909,7 +18620,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;
     display.input.reset();
     // Adds "Select all" to context menu in FF
     if (!cm.somethingSelected()) { te.value = input.prevInput = " "; }
-    input.contextMenuPending = true;
+    input.contextMenuPending = rehide;
     display.selForContextMenu = cm.doc.sel;
     clearTimeout(display.detectingSelectAll);
 
@@ -16930,6 +18641,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;
       }
     }
     function rehide() {
+      if (input.contextMenuPending != rehide) { return }
       input.contextMenuPending = false;
       input.wrapper.style.cssText = oldWrapperCSS;
       te.style.cssText = oldCSS;
@@ -17119,7 +18831,7 @@ var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;
 
   addLegacyProps(CodeMirror);
 
-  CodeMirror.version = "5.42.0";
+  CodeMirror.version = "5.43.0";
 
   return CodeMirror;
 
@@ -17197,7 +18909,7 @@ CodeMirror.defineMode("css", function(config, parserConfig) {
       if (/[\d.]/.test(stream.peek())) {
         stream.eatWhile(/[\w.%]/);
         return ret("number", "unit");
-      } else if (stream.match(/^-[\w\\\-]+/)) {
+      } else if (stream.match(/^-[\w\\\-]*/)) {
         stream.eatWhile(/[\w\\\-]/);
         if (stream.match(/^\s*:/, false))
           return ret("variable-2", "variable-definition");
@@ -17211,12 +18923,11 @@ CodeMirror.defineMode("css", function(config, parserConfig) {
       return ret("qualifier", "qualifier");
     } else if (/[:;{}\[\]\(\)]/.test(ch)) {
       return ret(null, ch);
-    } else if (((ch == "u" || ch == "U") && stream.match(/rl(-prefix)?\(/i)) ||
-               ((ch == "d" || ch == "D") && stream.match("omain(", true, true)) ||
-               ((ch == "r" || ch == "R") && stream.match("egexp(", true, true))) {
-      stream.backUp(1);
-      state.tokenize = tokenParenthesized;
-      return ret("property", "word");
+    } else if (stream.match(/[\w-.]+(?=\()/)) {
+      if (/^(url(-prefix)?|domain|regexp)$/.test(stream.current().toLowerCase())) {
+        state.tokenize = tokenParenthesized;
+      }
+      return ret("variable callee", "variable");
     } else if (/[\w\\\-]/.test(ch)) {
       stream.eatWhile(/[\w\\\-]/);
       return ret("property", "word");
@@ -18079,7 +19790,7 @@ CodeMirror.defineMode("css", function(config, parserConfig) {
           return maybeBackup(stream, endTag, state.localMode.token(stream, state.localState));
         };
         state.localMode = mode;
-        state.localState = CodeMirror.startState(mode, htmlMode.indent(state.htmlState, ""));
+        state.localState = CodeMirror.startState(mode, htmlMode.indent(state.htmlState, "", ""));
       } else if (state.inTag) {
         state.inTag += stream.current()
         if (stream.eol()) state.inTag += " "
@@ -18109,7 +19820,7 @@ CodeMirror.defineMode("css", function(config, parserConfig) {
 
       indent: function (state, textAfter, line) {
         if (!state.localMode || /^\s*<\//.test(textAfter))
-          return htmlMode.indent(state.htmlState, textAfter);
+          return htmlMode.indent(state.htmlState, textAfter, line);
         else if (state.localMode.indent)
           return state.localMode.indent(state.localState, textAfter, line);
         else
@@ -18499,7 +20210,10 @@ CodeMirror.defineMode("javascript", function(config, parserConfig) {
     }
     if (type == "function") return cont(functiondef);
     if (type == "for") return cont(pushlex("form"), forspec, statement, poplex);
-    if (type == "class" || (isTS && value == "interface")) { cx.marked = "keyword"; return cont(pushlex("form"), className, poplex); }
+    if (type == "class" || (isTS && value == "interface")) {
+      cx.marked = "keyword"
+      return cont(pushlex("form", type == "class" ? type : value), className, poplex)
+    }
     if (type == "variable") {
       if (isTS && value == "declare") {
         cx.marked = "keyword"
@@ -18507,11 +20221,11 @@ CodeMirror.defineMode("javascript", function(config, parserConfig) {
       } else if (isTS && (value == "module" || value == "enum" || value == "type") && cx.stream.match(/^\s*\w/, false)) {
         cx.marked = "keyword"
         if (value == "enum") return cont(enumdef);
-        else if (value == "type") return cont(typeexpr, expect("operator"), typeexpr, expect(";"));
+        else if (value == "type") return cont(typename, expect("operator"), typeexpr, expect(";"));
         else return cont(pushlex("form"), pattern, expect("{"), pushlex("}"), block, poplex, poplex)
       } else if (isTS && value == "namespace") {
         cx.marked = "keyword"
-        return cont(pushlex("form"), expression, block, poplex)
+        return cont(pushlex("form"), expression, statement, poplex)
       } else if (isTS && value == "abstract") {
         cx.marked = "keyword"
         return cont(statement)
@@ -18686,6 +20400,7 @@ CodeMirror.defineMode("javascript", function(config, parserConfig) {
         }, proceed);
       }
       if (type == end || value == end) return cont();
+      if (sep && sep.indexOf(";") > -1) return pass(what)
       return cont(expect(end));
     }
     return function(type, value) {
@@ -18704,7 +20419,7 @@ CodeMirror.defineMode("javascript", function(config, parserConfig) {
   }
   function maybetype(type, value) {
     if (isTS) {
-      if (type == ":") return cont(typeexpr);
+      if (type == ":" || value == "in") return cont(typeexpr);
       if (value == "?") return cont(maybetype);
     }
   }
@@ -18721,9 +20436,9 @@ CodeMirror.defineMode("javascript", function(config, parserConfig) {
     }
   }
   function typeexpr(type, value) {
-    if (value == "keyof" || value == "typeof") {
+    if (value == "keyof" || value == "typeof" || value == "infer") {
       cx.marked = "keyword"
-      return cont(value == "keyof" ? typeexpr : expressionNoComma)
+      return cont(value == "typeof" ? expressionNoComma : typeexpr)
     }
     if (type == "variable" || value == "void") {
       cx.marked = "type"
@@ -18732,7 +20447,7 @@ CodeMirror.defineMode("javascript", function(config, parserConfig) {
     if (type == "string" || type == "number" || type == "atom") return cont(afterType);
     if (type == "[") return cont(pushlex("]"), commasep(typeexpr, "]", ","), poplex, afterType)
     if (type == "{") return cont(pushlex("}"), commasep(typeprop, "}", ",;"), poplex, afterType)
-    if (type == "(") return cont(commasep(typearg, ")"), maybeReturnType)
+    if (type == "(") return cont(commasep(typearg, ")"), maybeReturnType, afterType)
     if (type == "<") return cont(commasep(typeexpr, ">"), typeexpr)
   }
   function maybeReturnType(type) {
@@ -18742,24 +20457,28 @@ CodeMirror.defineMode("javascript", function(config, parserConfig) {
     if (type == "variable" || cx.style == "keyword") {
       cx.marked = "property"
       return cont(typeprop)
-    } else if (value == "?") {
+    } else if (value == "?" || type == "number" || type == "string") {
       return cont(typeprop)
     } else if (type == ":") {
       return cont(typeexpr)
     } else if (type == "[") {
-      return cont(expression, maybetype, expect("]"), typeprop)
+      return cont(expect("variable"), maybetype, expect("]"), typeprop)
+    } else if (type == "(") {
+      return pass(functiondecl, typeprop)
     }
   }
   function typearg(type, value) {
     if (type == "variable" && cx.stream.match(/^\s*[?:]/, false) || value == "?") return cont(typearg)
     if (type == ":") return cont(typeexpr)
+    if (type == "spread") return cont(typearg)
     return pass(typeexpr)
   }
   function afterType(type, value) {
     if (value == "<") return cont(pushlex(">"), commasep(typeexpr, ">"), poplex, afterType)
     if (value == "|" || type == "." || value == "&") return cont(typeexpr)
-    if (type == "[") return cont(expect("]"), afterType)
+    if (type == "[") return cont(typeexpr, expect("]"), afterType)
     if (value == "extends" || value == "implements") { cx.marked = "keyword"; return cont(typeexpr) }
+    if (value == "?") return cont(typeexpr, expect(":"), typeexpr)
   }
   function maybeTypeArgs(_, value) {
     if (value == "<") return cont(pushlex(">"), commasep(typeexpr, ">"), poplex, afterType)
@@ -18832,6 +20551,20 @@ CodeMirror.defineMode("javascript", function(config, parserConfig) {
     if (type == "(") return cont(pushcontext, pushlex(")"), commasep(funarg, ")"), poplex, mayberettype, statement, popcontext);
     if (isTS && value == "<") return cont(pushlex(">"), commasep(typeparam, ">"), poplex, functiondef)
   }
+  function functiondecl(type, value) {
+    if (value == "*") {cx.marked = "keyword"; return cont(functiondecl);}
+    if (type == "variable") {register(value); return cont(functiondecl);}
+    if (type == "(") return cont(pushcontext, pushlex(")"), commasep(funarg, ")"), poplex, mayberettype, popcontext);
+    if (isTS && value == "<") return cont(pushlex(">"), commasep(typeparam, ">"), poplex, functiondecl)
+  }
+  function typename(type, value) {
+    if (type == "keyword" || type == "variable") {
+      cx.marked = "type"
+      return cont(typename)
+    } else if (value == "<") {
+      return cont(pushlex(">"), commasep(typeparam, ">"), poplex)
+    }
+  }
   function funarg(type, value) {
     if (value == "@") cont(expression, funarg)
     if (type == "spread") return cont(funarg);
@@ -18866,13 +20599,15 @@ CodeMirror.defineMode("javascript", function(config, parserConfig) {
       cx.marked = "property";
       return cont(isTS ? classfield : functiondef, classBody);
     }
+    if (type == "number" || type == "string") return cont(isTS ? classfield : functiondef, classBody);
     if (type == "[")
       return cont(expression, maybetype, expect("]"), isTS ? classfield : functiondef, classBody)
     if (value == "*") {
       cx.marked = "keyword";
       return cont(classBody);
     }
-    if (type == ";") return cont(classBody);
+    if (isTS && type == "(") return pass(functiondecl, classBody)
+    if (type == ";" || type == ",") return cont(classBody);
     if (type == "}") return cont();
     if (value == "@") return cont(expression, classBody)
   }
@@ -18880,7 +20615,8 @@ CodeMirror.defineMode("javascript", function(config, parserConfig) {
     if (value == "?") return cont(classfield)
     if (type == ":") return cont(typeexpr, maybeAssign)
     if (value == "=") return cont(expressionNoComma)
-    return pass(functiondef)
+    var context = cx.state.lexical.prev, isInterface = context && context.info == "interface"
+    return pass(isInterface ? functiondecl : functiondef)
   }
   function afterExport(type, value) {
     if (value == "*") { cx.marked = "keyword"; return cont(maybeFrom, expect(";")); }
@@ -19753,10 +21489,10 @@ if (!CodeMirror.mimeModes.hasOwnProperty("text/html"))
 
 /***/ }),
 
-/***/ "./node_modules/node-libs-browser/node_modules/process/browser.js":
-/*!************************************************************************!*\
-  !*** ./node_modules/node-libs-browser/node_modules/process/browser.js ***!
-  \************************************************************************/
+/***/ "./node_modules/process/browser.js":
+/*!*****************************************!*\
+  !*** ./node_modules/process/browser.js ***!
+  \*****************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -20423,7 +22159,7 @@ exports.default = Promise;
     attachTo.clearImmediate = clearImmediate;
 }(typeof self === "undefined" ? typeof global === "undefined" ? this : global : self));
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../webpack/buildin/global.js */ "./node_modules/webpack/buildin/global.js"), __webpack_require__(/*! ./../node-libs-browser/node_modules/process/browser.js */ "./node_modules/node-libs-browser/node_modules/process/browser.js")))
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../webpack/buildin/global.js */ "./node_modules/webpack/buildin/global.js"), __webpack_require__(/*! ./../process/browser.js */ "./node_modules/process/browser.js")))
 
 /***/ }),
 
@@ -23652,6 +25388,35 @@ module.exports = {
 "use strict";
 
 
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; /**
+                                                                                                                                                                                                                                                                   * You can customize the initial state of the module from the editor initialization, by passing the following [Configuration Object](https://github.com/artf/grapesjs/blob/master/src/block_manager/config/config.js)
+                                                                                                                                                                                                                                                                   * ```js
+                                                                                                                                                                                                                                                                   * const editor = grapesjs.init({
+                                                                                                                                                                                                                                                                   *  blockManager: {
+                                                                                                                                                                                                                                                                   *    // options
+                                                                                                                                                                                                                                                                   *  }
+                                                                                                                                                                                                                                                                   * })
+                                                                                                                                                                                                                                                                   * ```
+                                                                                                                                                                                                                                                                   *
+                                                                                                                                                                                                                                                                   * Once the editor is instantiated you can use its API. Before using these methods you should get the module from the instance
+                                                                                                                                                                                                                                                                   *
+                                                                                                                                                                                                                                                                   * ```js
+                                                                                                                                                                                                                                                                   * const blockManager = editor.BlockManager;
+                                                                                                                                                                                                                                                                   * ```
+                                                                                                                                                                                                                                                                   * * [add](#add)
+                                                                                                                                                                                                                                                                   * * [get](#get)
+                                                                                                                                                                                                                                                                   * * [getAll](#getall)
+                                                                                                                                                                                                                                                                   * * [getAllVisible](#getallvisible)
+                                                                                                                                                                                                                                                                   * * [remove](#remove)
+                                                                                                                                                                                                                                                                   * * [getConfig](#getconfig)
+                                                                                                                                                                                                                                                                   * * [getCategories](#getcategories)
+                                                                                                                                                                                                                                                                   * * [getContainer](#getcontainer)
+                                                                                                                                                                                                                                                                   * * [render](#render)
+                                                                                                                                                                                                                                                                   *
+                                                                                                                                                                                                                                                                   * @module BlockManager
+                                                                                                                                                                                                                                                                   */
+
+
 var _underscore = __webpack_require__(/*! underscore */ "./node_modules/underscore/underscore.js");
 
 module.exports = function () {
@@ -23690,8 +25455,8 @@ module.exports = function () {
       // Global blocks collection
       blocks = new Blocks([]);
       blocksVisible = new Blocks([]);
-      categories = new BlockCategories(), blocksView = new BlocksView({
-        // Visible collection
+      categories = new BlockCategories();
+      blocksView = new BlocksView({
         collection: blocksVisible,
         categories: categories
       }, c);
@@ -23837,8 +25602,10 @@ module.exports = function () {
 
     /**
      * Render blocks
-     * @param  {Array} blocks Blocks to render, without the argument will render
-     *                        all global blocks
+     * @param  {Array} blocks Blocks to render, without the argument will render all global blocks
+     * @param  {Object} [opts={}] Options
+     * @param  {Boolean} [opts.external] Render blocks in a new container (HTMLElement will be returned)
+     * @param  {Boolean} [opts.ignoreCategories] Render blocks without categories
      * @return {HTMLElement} Rendered element
      * @example
      * // Render all blocks (inside the global collection)
@@ -23846,9 +25613,9 @@ module.exports = function () {
      *
      * // Render new set of blocks
      * const blocks = blockManager.getAll();
-     * blockManager.render(blocks.filter(
-     *  block => block.get('category') == 'sections'
-     * ));
+     * const filtered = blocks.filter(block => block.get('category') == 'sections')
+     *
+     * blockManager.render(filtered);
      * // Or a new set from an array
      * blockManager.render([
      *  {label: 'Label text', content: '<div>Content</div>'}
@@ -23856,46 +25623,34 @@ module.exports = function () {
      *
      * // Back to blocks from the global collection
      * blockManager.render();
+     *
+     * // You can also render your blocks outside of the main block container
+     * const newBlocksEl = blockManager.render(filtered, { external: true });
+     * document.getElementById('some-id').appendChild(newBlocksEl);
      */
     render: function render(blocks) {
+      var opts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
       var toRender = blocks || this.getAll().models;
+
+      if (opts.external) {
+        return new BlocksView({
+          collection: new Blocks(toRender),
+          categories: categories
+        }, _extends({}, c, opts)).render().el;
+      }
 
       if (!blocksView.rendered) {
         blocksView.render();
         blocksView.rendered = 1;
       }
 
+      blocksView.updateConfig(opts);
       blocksView.collection.reset(toRender);
       return this.getContainer();
     }
   };
-}; /**
-    * You can customize the initial state of the module from the editor initialization, by passing the following [Configuration Object](https://github.com/artf/grapesjs/blob/master/src/block_manager/config/config.js)
-    * ```js
-    * const editor = grapesjs.init({
-    *  blockManager: {
-    *    // options
-    *  }
-    * })
-    * ```
-    *
-    * Once the editor is instantiated you can use its API. Before using these methods you should get the module from the instance
-    *
-    * ```js
-    * const blockManager = editor.BlockManager;
-    * ```
-    * * [add](#add)
-    * * [get](#get)
-    * * [getAll](#getall)
-    * * [getAllVisible](#getallvisible)
-    * * [remove](#remove)
-    * * [getConfig](#getconfig)
-    * * [getCategories](#getcategories)
-    * * [getContainer](#getcontainer)
-    * * [render](#render)
-    *
-    * @module BlockManager
-    */
+};
 
 /***/ }),
 
@@ -24172,6 +25927,8 @@ module.exports = _backbone2.default.View.extend({
 "use strict";
 
 
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
 var _underscore = __webpack_require__(/*! underscore */ "./node_modules/underscore/underscore.js");
 
 var BlockView = __webpack_require__(/*! ./BlockView */ "./src/block_manager/view/BlockView.js");
@@ -24199,6 +25956,11 @@ module.exports = __webpack_require__(/*! backbone */ "./node_modules/backbone/ba
       this.config.getSorter = this.getSorter;
       this.canvas = this.em.get('Canvas');
     }
+  },
+  updateConfig: function updateConfig() {
+    var opts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+    this.config = _extends({}, this.config, opts);
   },
 
 
@@ -24281,16 +26043,18 @@ module.exports = __webpack_require__(/*! backbone */ "./node_modules/backbone/ba
    * @private
    * */
   add: function add(model, fragment) {
+    var config = this.config;
+
     var frag = fragment || null;
     var view = new BlockView({
       model: model,
       attributes: model.get('attributes')
-    }, this.config);
+    }, config);
     var rendered = view.render().el;
     var category = model.get('category');
 
     // Check for categories
-    if (category && this.categories) {
+    if (category && this.categories && !config.ignoreCategories) {
       if ((0, _underscore.isString)(category)) {
         category = {
           id: category,
@@ -24467,7 +26231,7 @@ module.exports = {
    * Be aware that these scripts will not be printed in the export code
    * @example
    * scripts: [ 'https://...1.js', 'https://...2.js' ]
-  */
+   */
   scripts: [],
 
   /*
@@ -24475,7 +26239,7 @@ module.exports = {
    * Be aware that these styles will not be printed in the export code
    * @example
    * styles: [ 'https://...1.css', 'https://...2.css' ]
-  */
+   */
   styles: [],
 
   /**
@@ -24488,11 +26252,16 @@ module.exports = {
   customBadgeLabel: '',
 
   /**
+   * Indicate when to start the auto scroll of the canvas on component/block dragging (value in px )
+   */
+  autoscrollLimit: 50,
+
+  /**
    * When some textable component is selected and focused (eg. input or text component) the editor
    * stops some commands (eg. disables the copy/paste of components with CTRL+C/V to allow the copy/paste of the text).
    * This option allows to customize, by a selector, which element should not be considered textable
    */
-  notTextable: ['button', 'input[type=checkbox]', 'input[type=radio]']
+  notTextable: ['button', 'a', 'input[type=checkbox]', 'input[type=radio]']
 };
 
 /***/ }),
@@ -24545,6 +26314,10 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
                                                                                                                                                                                                      * @module Canvas
                                                                                                                                                                                                      */
 
+var _window = window,
+    requestAnimationFrame = _window.requestAnimationFrame;
+
+
 module.exports = function () {
   var c = {},
       defaults = __webpack_require__(/*! ./config/config */ "./src/canvas/config/config.js"),
@@ -24596,6 +26369,7 @@ module.exports = function () {
       this.startAutoscroll = this.startAutoscroll.bind(this);
       this.stopAutoscroll = this.stopAutoscroll.bind(this);
       this.autoscroll = this.autoscroll.bind(this);
+      this.updateClientY = this.updateClientY.bind(this);
       return this;
     },
 
@@ -25002,23 +26776,27 @@ module.exports = function () {
       // By detaching those from the stack avoid browsers lags
       // Noticeable with "fast" drag of blocks
       setTimeout(function () {
-        (0, _mixins.on)(toListen, 'mousemove', _this.autoscroll);
+        (0, _mixins.on)(toListen, 'mousemove dragover', _this.updateClientY);
         (0, _mixins.on)(toListen, 'mouseup', _this.stopAutoscroll);
+        requestAnimationFrame(_this.autoscroll);
       }, 0);
+    },
+    updateClientY: function updateClientY(ev) {
+      ev.preventDefault();
+      this.lastClientY = (0, _mixins.getPointerEvent)(ev).clientY;
     },
 
 
     /**
      * @private
      */
-    autoscroll: function autoscroll(e) {
-      e.preventDefault();
+    autoscroll: function autoscroll() {
       if (this.dragging) {
         var frameWindow = this.getFrameEl().contentWindow;
         var actualTop = frameWindow.document.body.scrollTop;
         var nextTop = actualTop;
-        var clientY = e.clientY;
-        var limitTop = 50;
+        var clientY = this.lastClientY;
+        var limitTop = this.getConfig().autoscrollLimit;
         var limitBottom = frameRect.height - limitTop;
 
         if (clientY < limitTop) {
@@ -25029,8 +26807,8 @@ module.exports = function () {
           nextTop += clientY - limitBottom;
         }
 
-        //console.log(`actualTop: ${actualTop} clientY: ${clientY} nextTop: ${nextTop} frameHeigh: ${frameRect.height}`);
         frameWindow.scrollTo(0, nextTop);
+        requestAnimationFrame(this.autoscroll);
       }
     },
 
@@ -25042,7 +26820,7 @@ module.exports = function () {
     stopAutoscroll: function stopAutoscroll() {
       this.dragging = 0;
       var toListen = this.getScrollListeners();
-      (0, _mixins.off)(toListen, 'mousemove', this.autoscroll);
+      (0, _mixins.off)(toListen, 'mousemove dragover', this.updateClientY);
       (0, _mixins.off)(toListen, 'mouseup', this.stopAutoscroll);
     },
     getScrollListeners: function getScrollListeners() {
@@ -25171,7 +26949,7 @@ module.exports = _backbone2.default.View.extend({
    */
   isElInViewport: function isElInViewport(el) {
     var rect = (0, _mixins.getElement)(el).getBoundingClientRect();
-    var frameRect = this.getFrameOffset(1);
+    var frameRect = this.getFrameOffset();
     var rTop = rect.top;
     var rLeft = rect.left;
     return rTop >= 0 && rLeft >= 0 && rTop <= frameRect.height && rLeft <= frameRect.width;
@@ -29252,15 +31030,31 @@ module.exports = {
    * @param {Object} pos
    */
   updateToolbarPos: function updateToolbarPos(el, elPos) {
+    var canvas = this.canvas;
+
     var unit = 'px';
-    var toolbarEl = this.canvas.getToolbarEl();
+    var toolbarEl = canvas.getToolbarEl();
     var toolbarStyle = toolbarEl.style;
     toolbarStyle.opacity = 0;
-    var pos = this.canvas.getTargetToElementDim(toolbarEl, el, {
+    var pos = canvas.getTargetToElementDim(toolbarEl, el, {
       elPos: elPos,
       event: 'toolbarPosUpdate'
     });
+
     if (pos) {
+      var frameOffset = canvas.getCanvasView().getFrameOffset();
+
+      // Scroll with the window if the top edge is reached and the
+      // element is bigger than the canvas
+      if (pos.top <= pos.canvasTop && !(pos.elementHeight + pos.targetHeight >= frameOffset.height)) {
+        pos.top = pos.elementTop + pos.elementHeight;
+      }
+
+      // Check if not outside of the canvas
+      if (pos.left < pos.canvasLeft) {
+        pos.left = pos.canvasLeft;
+      }
+
       var leftPos = pos.left + pos.elementWidth - pos.targetWidth;
       toolbarStyle.top = pos.top + unit;
       toolbarStyle.left = (leftPos < 0 ? 0 : leftPos) + unit;
@@ -29389,6 +31183,7 @@ module.exports = {
 
     em.off('component:update', this.updateAttached, this);
     em.off('change:canvasOffset', this.updateAttached, this);
+    em.off('change:selectedComponent', this.updateToolbar, this);
   }
 };
 
@@ -29554,148 +31349,148 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var $ = _backbone2.default.$;
 
 module.exports = {
-  getOffsetMethod: function getOffsetMethod(state) {
-    var method = state || '';
-    return 'get' + method + 'OffsetViewerEl';
-  },
-  run: function run(editor, sender, opts) {
-    var opt = opts || {};
-    var state = opt.state || '';
-    var config = editor.getConfig();
+    getOffsetMethod: function getOffsetMethod(state) {
+        var method = state || '';
+        return 'get' + method + 'OffsetViewerEl';
+    },
+    run: function run(editor, sender, opts) {
+        var opt = opts || {};
+        var state = opt.state || '';
+        var config = editor.getConfig();
 
-    if (!config.showOffsets || !config.showOffsetsSelected && state == 'Fixed') {
-      return;
+        if (!config.showOffsets || !config.showOffsetsSelected && state == 'Fixed') {
+            return;
+        }
+
+        var canvas = editor.Canvas;
+        var el = opt.el || '';
+        var pos = opt.elPos || canvas.getElementPos(el);
+        var style = window.getComputedStyle(el);
+        var ppfx = this.ppfx;
+        var stateVar = state + 'State';
+        var method = this.getOffsetMethod(state);
+        var offsetViewer = canvas[method]();
+        offsetViewer.style.display = 'block';
+
+        var marginT = this['marginT' + state];
+        var marginB = this['marginB' + state];
+        var marginL = this['marginL' + state];
+        var marginR = this['marginR' + state];
+        var padT = this['padT' + state];
+        var padB = this['padB' + state];
+        var padL = this['padL' + state];
+        var padR = this['padR' + state];
+
+        if (!this[stateVar]) {
+            var stateLow = state.toLowerCase();
+            var marginName = stateLow + 'margin-v';
+            var paddingName = stateLow + 'padding-v';
+            var marginV = $('<div class="' + ppfx + 'marginName">').get(0);
+            var paddingV = $('<div class="' + ppfx + 'paddingName">').get(0);
+            var marginEls = ppfx + marginName + '-el';
+            var paddingEls = ppfx + paddingName + '-el';
+            var fullMargName = marginEls + ' ' + (ppfx + marginName);
+            var fullPadName = paddingEls + ' ' + (ppfx + paddingName);
+            marginT = $('<div class="' + fullMargName + '-top"></div>').get(0);
+            marginB = $('<div class="' + fullMargName + '-bottom"></div>').get(0);
+            marginL = $('<div class="' + fullMargName + '-left"></div>').get(0);
+            marginR = $('<div class="' + fullMargName + '-right"></div>').get(0);
+            padT = $('<div class="' + fullPadName + '-top"></div>').get(0);
+            padB = $('<div class="' + fullPadName + '-bottom"></div>').get(0);
+            padL = $('<div class="' + fullPadName + '-left"></div>').get(0);
+            padR = $('<div class="' + fullPadName + '-right"></div>').get(0);
+            this['marginT' + state] = marginT;
+            this['marginB' + state] = marginB;
+            this['marginL' + state] = marginL;
+            this['marginR' + state] = marginR;
+            this['padT' + state] = padT;
+            this['padB' + state] = padB;
+            this['padL' + state] = padL;
+            this['padR' + state] = padR;
+            marginV.appendChild(marginT);
+            marginV.appendChild(marginB);
+            marginV.appendChild(marginL);
+            marginV.appendChild(marginR);
+            paddingV.appendChild(padT);
+            paddingV.appendChild(padB);
+            paddingV.appendChild(padL);
+            paddingV.appendChild(padR);
+            offsetViewer.appendChild(marginV);
+            offsetViewer.appendChild(paddingV);
+            this[stateVar] = '1';
+        }
+
+        var unit = 'px';
+        var marginLeftSt = style.marginLeft.replace(unit, '');
+        var marginTopSt = parseInt(style.marginTop.replace(unit, ''));
+        var marginBottomSt = parseInt(style.marginBottom.replace(unit, ''));
+        var mtStyle = marginT.style;
+        var mbStyle = marginB.style;
+        var mlStyle = marginL.style;
+        var mrStyle = marginR.style;
+        var ptStyle = padT.style;
+        var pbStyle = padB.style;
+        var plStyle = padL.style;
+        var prStyle = padR.style;
+        var posLeft = parseInt(pos.left);
+
+        // Margin style
+        mtStyle.height = style.marginTop;
+        mtStyle.width = style.width;
+        mtStyle.top = pos.top - style.marginTop.replace(unit, '') + unit;
+        mtStyle.left = posLeft + unit;
+
+        mbStyle.height = style.marginBottom;
+        mbStyle.width = style.width;
+        mbStyle.top = pos.top + pos.height + unit;
+        mbStyle.left = posLeft + unit;
+
+        var marginSideH = pos.height + marginTopSt + marginBottomSt + unit;
+        var marginSideT = pos.top - marginTopSt + unit;
+        mlStyle.height = marginSideH;
+        mlStyle.width = style.marginLeft;
+        mlStyle.top = marginSideT;
+        mlStyle.left = posLeft - marginLeftSt + unit;
+
+        mrStyle.height = marginSideH;
+        mrStyle.width = style.marginRight;
+        mrStyle.top = marginSideT;
+        mrStyle.left = posLeft + pos.width + unit;
+
+        // Padding style
+        var padTop = parseInt(style.paddingTop.replace(unit, ''));
+        ptStyle.height = style.paddingTop;
+        ptStyle.width = style.width;
+        ptStyle.top = pos.top + unit;
+        ptStyle.left = posLeft + unit;
+
+        var padBot = parseInt(style.paddingBottom.replace(unit, ''));
+        pbStyle.height = style.paddingBottom;
+        pbStyle.width = style.width;
+        pbStyle.top = pos.top + pos.height - padBot + unit;
+        pbStyle.left = posLeft + unit;
+
+        var padSideH = pos.height - padBot - padTop + unit;
+        var padSideT = pos.top + padTop + unit;
+        plStyle.height = padSideH;
+        plStyle.width = style.paddingLeft;
+        plStyle.top = padSideT;
+        plStyle.left = pos.left + unit;
+
+        var padRight = parseInt(style.paddingRight.replace(unit, ''));
+        prStyle.height = padSideH;
+        prStyle.width = style.paddingRight;
+        prStyle.top = padSideT;
+        prStyle.left = pos.left + pos.width - padRight + unit;
+    },
+    stop: function stop(editor, sender, opts) {
+        var opt = opts || {};
+        var state = opt.state || '';
+        var method = this.getOffsetMethod(state);
+        var canvas = editor.Canvas;
+        var offsetViewer = canvas[method]();
+        offsetViewer.style.display = 'none';
     }
-
-    var canvas = editor.Canvas;
-    var el = opt.el || '';
-    var pos = opt.elPos || canvas.getElementPos(el);
-    var style = window.getComputedStyle(el);
-    var ppfx = this.ppfx;
-    var stateVar = state + 'State';
-    var method = this.getOffsetMethod(state);
-    var offsetViewer = canvas[method]();
-    offsetViewer.style.display = 'block';
-
-    var marginT = this['marginT' + state];
-    var marginB = this['marginB' + state];
-    var marginL = this['marginL' + state];
-    var marginR = this['marginR' + state];
-    var padT = this['padT' + state];
-    var padB = this['padB' + state];
-    var padL = this['padL' + state];
-    var padR = this['padR' + state];
-
-    if (!this[stateVar]) {
-      var stateLow = state.toLowerCase();
-      var marginName = stateLow + 'margin-v';
-      var paddingName = stateLow + 'padding-v';
-      var marginV = $('<div class="' + ppfx + 'marginName">').get(0);
-      var paddingV = $('<div class="' + ppfx + 'paddingName">').get(0);
-      var marginEls = ppfx + marginName + '-el';
-      var paddingEls = ppfx + paddingName + '-el';
-      var fullMargName = marginEls + ' ' + (ppfx + marginName);
-      var fullPadName = paddingEls + ' ' + (ppfx + paddingName);
-      marginT = $('<div class="' + fullMargName + '-top"></div>').get(0);
-      marginB = $('<div class="' + fullMargName + '-bottom"></div>').get(0);
-      marginL = $('<div class="' + fullMargName + '-left"></div>').get(0);
-      marginR = $('<div class="' + fullMargName + '-right"></div>').get(0);
-      padT = $('<div class="' + fullPadName + '-top"></div>').get(0);
-      padB = $('<div class="' + fullPadName + '-bottom"></div>').get(0);
-      padL = $('<div class="' + fullPadName + '-left"></div>').get(0);
-      padR = $('<div class="' + fullPadName + '-right"></div>').get(0);
-      this['marginT' + state] = marginT;
-      this['marginB' + state] = marginB;
-      this['marginL' + state] = marginL;
-      this['marginR' + state] = marginR;
-      this['padT' + state] = padT;
-      this['padB' + state] = padB;
-      this['padL' + state] = padL;
-      this['padR' + state] = padR;
-      marginV.appendChild(marginT);
-      marginV.appendChild(marginB);
-      marginV.appendChild(marginL);
-      marginV.appendChild(marginR);
-      paddingV.appendChild(padT);
-      paddingV.appendChild(padB);
-      paddingV.appendChild(padL);
-      paddingV.appendChild(padR);
-      offsetViewer.appendChild(marginV);
-      offsetViewer.appendChild(paddingV);
-      this[stateVar] = '1';
-    }
-
-    var unit = 'px';
-    var marginLeftSt = style.marginLeft.replace(unit, '');
-    var marginTopSt = parseInt(style.marginTop.replace(unit, ''));
-    var marginBottomSt = parseInt(style.marginBottom.replace(unit, ''));
-    var mtStyle = marginT.style;
-    var mbStyle = marginB.style;
-    var mlStyle = marginL.style;
-    var mrStyle = marginR.style;
-    var ptStyle = padT.style;
-    var pbStyle = padB.style;
-    var plStyle = padL.style;
-    var prStyle = padR.style;
-    var posLeft = parseInt(pos.left);
-
-    // Margin style
-    mtStyle.height = style.marginTop;
-    mtStyle.width = style.width;
-    mtStyle.top = pos.top - style.marginTop.replace(unit, '') + unit;
-    mtStyle.left = posLeft + unit;
-
-    mbStyle.height = style.marginBottom;
-    mbStyle.width = style.width;
-    mbStyle.top = pos.top + pos.height + unit;
-    mbStyle.left = posLeft + unit;
-
-    var marginSideH = pos.height + marginTopSt + marginBottomSt + unit;
-    var marginSideT = pos.top - marginTopSt + unit;
-    mlStyle.height = marginSideH;
-    mlStyle.width = style.marginLeft;
-    mlStyle.top = marginSideT;
-    mlStyle.left = posLeft - marginLeftSt + unit;
-
-    mrStyle.height = marginSideH;
-    mrStyle.width = style.marginRight;
-    mrStyle.top = marginSideT;
-    mrStyle.left = posLeft + pos.width + unit;
-
-    // Padding style
-    var padTop = parseInt(style.paddingTop.replace(unit, ''));
-    ptStyle.height = style.paddingTop;
-    ptStyle.width = style.width;
-    ptStyle.top = pos.top + unit;
-    ptStyle.left = posLeft + unit;
-
-    var padBot = parseInt(style.paddingBottom.replace(unit, ''));
-    pbStyle.height = style.paddingBottom;
-    pbStyle.width = style.width;
-    pbStyle.top = pos.top + pos.height - padBot + unit;
-    pbStyle.left = posLeft + unit;
-
-    var padSideH = pos.height - padBot - padTop + unit;
-    var padSideT = pos.top + padTop + unit;
-    plStyle.height = padSideH;
-    plStyle.width = style.paddingLeft;
-    plStyle.top = padSideT;
-    plStyle.left = pos.left + unit;
-
-    var padRight = parseInt(style.paddingRight.replace(unit, ''));
-    prStyle.height = padSideH;
-    prStyle.width = style.paddingRight;
-    prStyle.top = padSideT;
-    prStyle.left = pos.left + pos.width - padRight + unit;
-  },
-  stop: function stop(editor, sender, opts) {
-    var opt = opts || {};
-    var state = opt.state || '';
-    var method = this.getOffsetMethod(state);
-    var canvas = editor.Canvas;
-    var offsetViewer = canvas[method]();
-    offsetViewer.style.display = 'none';
-  }
 };
 
 /***/ }),
@@ -29826,10 +31621,8 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
                                                                                                                                                                                                                                                                    * * [get](#get)
                                                                                                                                                                                                                                                                    * * [getAll](#getall)
                                                                                                                                                                                                                                                                    * * [clear](#clear)
-                                                                                                                                                                                                                                                                   * * [setIdRule](#setidrule)
-                                                                                                                                                                                                                                                                   * * [getIdRule](#getidrule)
-                                                                                                                                                                                                                                                                   * * [setClassRule](#setclassrule)
-                                                                                                                                                                                                                                                                   * * [getClassRule](#getclassrule)
+                                                                                                                                                                                                                                                                   * * [setRule](#setrule)
+                                                                                                                                                                                                                                                                   * * [getRule](#getrule)
                                                                                                                                                                                                                                                                    *
                                                                                                                                                                                                                                                                    * @module CssComposer
                                                                                                                                                                                                                                                                    */
@@ -30130,11 +31923,89 @@ module.exports = function () {
 
 
     /**
+     * Add/update the CSS rule with a generic selector
+     * @param {string} selectors Selector, eg. '.myclass'
+     * @param {Object} style  Style properties and values
+     * @param {Object} [opts={}]  Additional properties
+     * @param {String} [opts.atRuleType='']  At-rule type, eg. 'media'
+     * @param {String} [opts.atRuleParams='']  At-rule parameters, eg. '(min-width: 500px)'
+     * @return {CssRule} The new/updated rule
+     * @example
+     * // Simple class-based rule
+     * const rule = cc.setRule('.class1.class2', { color: 'red' });
+     * console.log(rule.toCSS()) // output: .class1.class2 { color: red }
+     * // With state and other mixed selector
+     * const rule = cc.setRule('.class1.class2:hover, div#myid', { color: 'red' });
+     * // output: .class1.class2:hover, div#myid { color: red }
+     * // With media
+     * const rule = cc.setRule('.class1:hover', { color: 'red' }, {
+     *  atRuleType: 'media',
+     *  atRuleParams: '(min-width: 500px)',
+     * });
+     * // output: @media (min-width: 500px) { .class1:hover { color: red } }
+     */
+    setRule: function setRule(selectors, style) {
+      var opts = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+      var atRuleType = opts.atRuleType,
+          atRuleParams = opts.atRuleParams;
+
+      var node = em.get('Parser').parserCss.checkNode({
+        selectors: selectors,
+        style: style
+      })[0];
+      var state = node.state,
+          selectorsAdd = node.selectorsAdd;
+
+      var sm = em.get('SelectorManager');
+      var selector = sm.add(node.selectors);
+      var rule = this.add(selector, state, atRuleParams, {
+        selectorsAdd: selectorsAdd,
+        atRule: atRuleType
+      });
+      rule.setStyle(style, opts);
+      return rule;
+    },
+
+
+    /**
+     * Get the CSS rule by a generic selector
+     * @param {string} selectors Selector, eg. '.myclass:hover'
+     * @param {String} [opts.atRuleType='']  At-rule type, eg. 'media'
+     * @param {String} [opts.atRuleParams='']  At-rule parameters, eg. '(min-width: 500px)'
+     * @return {CssRule}
+     * @example
+     * const rule = cc.getRule('.myclass1:hover');
+     * const rule2 = cc.getRule('.myclass1:hover, div#myid');
+     * const rule3 = cc.getRule('.myclass1', {
+     *  atRuleType: 'media',
+     *  atRuleParams: '(min-width: 500px)',
+     * });
+     */
+    getRule: function getRule(selectors) {
+      var opts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+      var sm = em.get('SelectorManager');
+      var node = em.get('Parser').parserCss.checkNode({ selectors: selectors })[0];
+      var selector = sm.get(node.selectors);
+      var state = node.state,
+          selectorsAdd = node.selectorsAdd;
+      var atRuleType = opts.atRuleType,
+          atRuleParams = opts.atRuleParams;
+
+      return selector && this.get(selector, state, atRuleParams, {
+        selectorsAdd: selectorsAdd,
+        atRule: atRuleType
+      });
+    },
+
+
+    /**
      * Add/update the CSS rule with id selector
      * @param {string} name Id selector name, eg. 'my-id'
      * @param {Object} style  Style properties and values
      * @param {Object} [opts={}]  Custom options, like `state` and `mediaText`
      * @return {CssRule} The new/updated rule
+     * @private
      * @example
      * const rule = cc.setIdRule('myid', { color: 'red' });
      * const ruleHover = cc.setIdRule('myid', { color: 'blue' }, { state: 'hover' });
@@ -30161,6 +32032,7 @@ module.exports = function () {
      * @param {string} name Id selector name, eg. 'my-id'
      * @param  {Object} [opts={}]  Custom options, like `state` and `mediaText`
      * @return {CssRule}
+     * @private
      * @example
      * const rule = cc.getIdRule('myid');
      * const ruleHover = cc.setIdRule('myid', { state: 'hover' });
@@ -30181,6 +32053,7 @@ module.exports = function () {
      * @param {Object} style  Style properties and values
      * @param {Object} [opts={}]  Custom options, like `state` and `mediaText`
      * @return {CssRule} The new/updated rule
+     * @private
      * @example
      * const rule = cc.setClassRule('myclass', { color: 'red' });
      * const ruleHover = cc.setClassRule('myclass', { color: 'blue' }, { state: 'hover' });
@@ -30207,6 +32080,7 @@ module.exports = function () {
      * @param {string} name Class selector name, eg. 'my-class'
      * @param  {Object} [opts={}]  Custom options, like `state` and `mediaText`
      * @return {CssRule}
+     * @private
      * @example
      * const rule = cc.getClassRule('myclass');
      * const ruleHover = cc.getClassRule('myclass', { state: 'hover' });
@@ -31236,6 +33110,10 @@ module.exports = function () {
     id: 'wrapper',
     model: __webpack_require__(/*! ./model/ComponentWrapper */ "./src/dom_components/model/ComponentWrapper.js"),
     view: ComponentView
+  }, {
+    id: 'tag',
+    model: __webpack_require__(/*! ./model/ComponentTag */ "./src/dom_components/model/ComponentTag.js"),
+    view: __webpack_require__(/*! ./view/ComponentTagView */ "./src/dom_components/view/ComponentTagView.js")
   }, {
     id: 'default',
     model: Component,
@@ -33588,6 +35466,99 @@ module.exports = Component.extend({
 
 /***/ }),
 
+/***/ "./src/dom_components/model/ComponentTag.js":
+/*!**************************************************!*\
+  !*** ./src/dom_components/model/ComponentTag.js ***!
+  \**************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(_) {
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var Component = __webpack_require__(/*! ./Component */ "./src/dom_components/model/Component.js");
+
+module.exports = Component.extend({
+  defaults: _extends({}, Component.prototype.defaults, {
+    type: 'tag',
+    name: 'Tag',
+    tagName: 'span',
+    badgable: 1,
+    textable: 1,
+    editable: 1,
+    draggable: 1,
+    droppable: 0,
+    highlightable: 1,
+    removable: 1,
+    attributes: {
+      'data-datatype': 'tag',
+      'data-gjs-type': 'tag',
+      contenteditable: 'false'
+    },
+    content: '{{ TAG }}',
+    traits: [{
+      type: 'select',
+      label: 'Name',
+      name: 'name',
+      changeProp: 1,
+      options: _.map([{
+        object: 'EmailTemplateTag',
+        name: 'grand_total',
+        description: 'The total transaction amount.'
+      }, {
+        object: 'EmailTemplateTag',
+        name: 'name',
+        description: "The customer's first and last names."
+      }, {
+        object: 'EmailTemplateTag',
+        name: 'merchant',
+        description: "Merchant's name"
+      }], function (_ref) {
+        var name = _ref.name;
+        return {
+          value: name,
+          name: name
+        };
+      })
+    }]
+  }),
+  handleNameChange: function handleNameChange() {
+    console.log('handleNameChange');
+    var el = this.getEl();
+    var name = this.changed.name;
+    el.innerHTML = '{{ ' + name + ' }}';
+    this.set({
+      attributes: { name: name }
+    });
+  },
+  initialize: function initialize(o, opt) {
+    Component.prototype.initialize.apply(this, arguments);
+    console.log('component tag initialize');
+    this.listenTo(this, 'change:name', this.handleNameChange);
+  }
+}, {
+  /**
+   * Detect if the passed element is a valid component.
+   * In case the element is valid an object abstracted
+   * from the element will be returned
+   * @param {HTMLElement}
+   * @return {Object}
+   * @private
+   */
+  isComponent: function isComponent(el) {
+    var result = '';
+    if (el.tagName === 'SPAN' && el.dataset.tag === '1') {
+      result = { type: 'tag' };
+    }
+    return result;
+  }
+});
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! underscore */ "./node_modules/underscore/underscore.js")))
+
+/***/ }),
+
 /***/ "./src/dom_components/model/ComponentText.js":
 /*!***************************************************!*\
   !*** ./src/dom_components/model/ComponentText.js ***!
@@ -33605,8 +35576,10 @@ var Component = __webpack_require__(/*! ./Component */ "./src/dom_components/mod
 module.exports = Component.extend({
   defaults: _extends({}, Component.prototype.defaults, {
     type: 'text',
-    droppable: false,
-    editable: true
+    textable: 1,
+    droppable: '[data-datatype=tag]',
+    editable: true,
+    layerable: false
   })
 });
 
@@ -34533,6 +36506,75 @@ module.exports = __webpack_require__(/*! ./ComponentView */ "./src/dom_component
 
 /***/ }),
 
+/***/ "./src/dom_components/view/ComponentTagView.js":
+/*!*****************************************************!*\
+  !*** ./src/dom_components/view/ComponentTagView.js ***!
+  \*****************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var Backbone = __webpack_require__(/*! backbone */ "./node_modules/backbone/backbone.js");
+var ComponentView = __webpack_require__(/*! ./ComponentView */ "./src/dom_components/view/ComponentView.js");
+
+module.exports = ComponentView.extend({
+  tagName: 'span',
+
+  events: {
+    dblclick: 'openModal',
+    click: 'logModel',
+    keydown: function keydown() {
+      if (e.key === 'Backspace') {
+        e.target.parentNode.removeChild(e.target);
+      }
+    }
+  },
+
+  initialize: function initialize(o) {
+    var model = this.model;
+    ComponentView.prototype.initialize.apply(this, arguments);
+    this.listenTo(model, 'dblclick active', this.openModal);
+    this.listenTo(model, 'click', this.logModel);
+    var config = this.config;
+    config.modal && (this.modal = config.modal);
+  },
+  logModel: function logModel() {
+    console.log(this.model);
+  },
+
+
+  /**
+   * Open dialog for image changing
+   * @param  {Object}  e  Event
+   * @private
+   * */
+  openModal: function openModal(e) {
+    var em = this.opts.config.em;
+    var editor = em ? em.get('Editor') : '';
+    var modal = editor.Modal;
+    modal.setTitle('Select Merge Field');
+    modal.setContent('Hello world');
+    modal.open();
+  },
+  render: function render() {
+    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+
+    ComponentView.prototype.render.apply(this, arguments);
+    var name = this.attr.name || 'tag: not set';
+    this.el.innerHTML = '{{ ' + name + ' }}';
+
+    // Avoid strange behaviours while try to drag
+    this.$el.attr('onmousedown', 'return false');
+    return this;
+  }
+});
+
+/***/ }),
+
 /***/ "./src/dom_components/view/ComponentTextNodeView.js":
 /*!**********************************************************!*\
   !*** ./src/dom_components/view/ComponentTextNodeView.js ***!
@@ -34642,7 +36684,7 @@ module.exports = ComponentView.extend({
           var selectable = !['text', 'default', ''].some(function (type) {
             return model.is(type);
           });
-          model.set({
+          var defaultProperties = {
             editable: selectable && model.get('editable'),
             highlightable: 0,
             removable: 0,
@@ -34651,7 +36693,17 @@ module.exports = ComponentView.extend({
             selectable: selectable,
             hoverable: selectable,
             toolbar: ''
-          });
+          };
+
+          var textableProperties = {
+            editable: selectable && model.get('editable'),
+            highlightable: 1,
+            badgable: 0,
+            draggable: 1,
+            copyable: 1,
+            textable: 1
+          };
+          model.set(model.get('textable') ? textableProperties : defaultProperties);
           model.get('components').each(function (model) {
             return clean(model);
           });
@@ -36638,6 +38690,10 @@ module.exports = {
       open: false,
       buildProps: ['float', 'display', 'position', 'top', 'right', 'left', 'bottom']
     }, {
+      name: 'Flex',
+      open: false,
+      buildProps: ['flex-direction', 'flex-wrap', 'justify-content', 'align-items', 'align-content', 'order', 'flex-basis', 'flex-grow', 'flex-shrink', 'align-self']
+    }, {
       name: 'Dimension',
       open: false,
       buildProps: ['width', 'height', 'max-width', 'min-height', 'margin', 'padding']
@@ -37440,6 +39496,9 @@ exports.default = function (config) {
     * ### RTE
     * * `rte:enable` - RTE enabled. The view, on which RTE is enabled, is passed as an argument
     * * `rte:disable` - RTE disabled. The view, on which RTE is disabled, is passed as an argument
+    * ### Modal
+    * * `modal:open` - Modal is opened
+    * * `modal:close` - Modal is closed
     * ### Commands
     * * `run:{commandName}` - Triggered when some command is called to run (eg. editor.runCommand('preview'))
     * * `stop:{commandName}` - Triggered when some command is called to stop (eg. editor.stopCommand('preview'))
@@ -38085,6 +40144,7 @@ module.exports = Backbone.Model.extend({
    * @private
    */
   refreshCanvas: function refreshCanvas() {
+    this.set('canvasOffset', null);
     this.set('canvasOffset', this.get('Canvas').getOffset());
   },
 
@@ -38323,7 +40383,7 @@ module.exports = function () {
     plugins: plugins,
 
     // Will be replaced on build
-    version: '0.14.50',
+    version: '<# VERSION #>',
 
     /**
      * Initialize the editor with passed options
@@ -38650,6 +40710,8 @@ module.exports = {
 "use strict";
 
 
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
 /**
  * You can customize the initial state of the module from the editor initialization, by passing the following [Configuration Object](https://github.com/artf/grapesjs/blob/master/src/modal_dialog/config/config.js)
  * ```js
@@ -38692,17 +40754,22 @@ module.exports = function () {
      */
     name: 'Modal',
 
+    getConfig: function getConfig() {
+      return c;
+    },
+
+
     /**
      * Initialize module. Automatically called with a new instance of the editor
      * @param {Object} config Configurations
      * @private
      */
-    init: function init(config) {
-      c = config || {};
-      for (var name in defaults) {
-        if (!(name in c)) c[name] = defaults[name];
-      }
+    init: function init() {
+      var config = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
+      c = _extends({}, defaults, config);
+
+      this.em = c.em;
       var ppfx = c.pStylePrefix;
       if (ppfx) c.stylePrefix = ppfx + c.stylePrefix;
 
@@ -38717,6 +40784,11 @@ module.exports = function () {
     postRender: function postRender(view) {
       var el = view.model.getConfig().el || view.el;
       this.render().appendTo(el);
+    },
+    triggerEvent: function triggerEvent(event) {
+      var em = this.em;
+
+      em && em.trigger('modal:' + event);
     },
 
 
@@ -38733,6 +40805,7 @@ module.exports = function () {
       opts.title && this.setTitle(opts.title);
       opts.content && this.setContent(opts.content);
       modal.show();
+      this.triggerEvent('open');
       return this;
     },
 
@@ -38743,6 +40816,7 @@ module.exports = function () {
      */
     close: function close() {
       modal.hide();
+      this.triggerEvent('close');
       return this;
     },
 
@@ -40876,6 +42950,8 @@ module.exports = function () {
       pHtml = new parserHtml(conf);
       pCss = new parserCss(conf);
       this.em = conf.em;
+      this.parserCss = pCss;
+      this.parserHtml = pHtml;
       return this;
     },
 
@@ -41019,7 +43095,8 @@ var parseCondition = exports.parseCondition = function parseCondition(node) {
  * @param {Object} style Key-value object of style declarations
  * @return {Object}
  */
-var createNode = exports.createNode = function createNode(selectors, style) {
+var createNode = exports.createNode = function createNode(selectors) {
+  var style = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
   var opts = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
   var node = {};
@@ -41362,6 +43439,9 @@ module.exports = function (config) {
           } else if (nodeName == 'class') {
             model.classes = this.parseClass(nodeValue);
           } else if (nodeName == 'contenteditable') {
+            if (nodeValue === 'false' && !model.editable) {
+              model.attributes[nodeName] = 'false';
+            }
             continue;
           } else if (nodeName.indexOf(modelAttrStart) === 0) {
             var modelAttr = nodeName.replace(modelAttrStart, '');
@@ -42324,56 +44404,57 @@ module.exports = {
 "use strict";
 
 
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; /**
+                                                                                                                                                                                                                                                                   * Selectors in GrapesJS are used in CSS Composer inside Rules and in Components as classes. To get better this concept let's take
+                                                                                                                                                                                                                                                                   * a look at this code:
+                                                                                                                                                                                                                                                                   *
+                                                                                                                                                                                                                                                                   * ```css
+                                                                                                                                                                                                                                                                   * span > #send-btn.btn{
+                                                                                                                                                                                                                                                                   *  ...
+                                                                                                                                                                                                                                                                   * }
+                                                                                                                                                                                                                                                                   * ```
+                                                                                                                                                                                                                                                                   * ```html
+                                                                                                                                                                                                                                                                   * <span>
+                                                                                                                                                                                                                                                                   *   <button id="send-btn" class="btn"></button>
+                                                                                                                                                                                                                                                                   * </span>
+                                                                                                                                                                                                                                                                   * ```
+                                                                                                                                                                                                                                                                   *
+                                                                                                                                                                                                                                                                   * In this scenario we get:
+                                                                                                                                                                                                                                                                   * * span     -> selector of type `tag`
+                                                                                                                                                                                                                                                                   * * send-btn -> selector of type `id`
+                                                                                                                                                                                                                                                                   * * btn      -> selector of type `class`
+                                                                                                                                                                                                                                                                   *
+                                                                                                                                                                                                                                                                   * So, for example, being `btn` the same class entity it'll be easier to refactor and track things.
+                                                                                                                                                                                                                                                                   *
+                                                                                                                                                                                                                                                                   * You can customize the initial state of the module from the editor initialization, by passing the following [Configuration Object](https://github.com/artf/grapesjs/blob/master/src/selector_manager/config/config.js)
+                                                                                                                                                                                                                                                                   * ```js
+                                                                                                                                                                                                                                                                   * const editor = grapesjs.init({
+                                                                                                                                                                                                                                                                   *  selectorManager: {
+                                                                                                                                                                                                                                                                   *    // options
+                                                                                                                                                                                                                                                                   *  }
+                                                                                                                                                                                                                                                                   * })
+                                                                                                                                                                                                                                                                   * ```
+                                                                                                                                                                                                                                                                   *
+                                                                                                                                                                                                                                                                   * Once the editor is instantiated you can use its API. Before using these methods you should get the module from the instance
+                                                                                                                                                                                                                                                                   *
+                                                                                                                                                                                                                                                                   * ```js
+                                                                                                                                                                                                                                                                   * const selectorManager = editor.SelectorManager;
+                                                                                                                                                                                                                                                                   * ```
+                                                                                                                                                                                                                                                                   *
+                                                                                                                                                                                                                                                                   * * [getConfig](#getconfig)
+                                                                                                                                                                                                                                                                   * * [add](#add)
+                                                                                                                                                                                                                                                                   * * [addClass](#addclass)
+                                                                                                                                                                                                                                                                   * * [get](#get)
+                                                                                                                                                                                                                                                                   * * [getAll](#getAll)
+                                                                                                                                                                                                                                                                   *
+                                                                                                                                                                                                                                                                   * @module SelectorManager
+                                                                                                                                                                                                                                                                   */
+
 var _underscore = __webpack_require__(/*! underscore */ "./node_modules/underscore/underscore.js");
 
 var isId = function isId(str) {
   return (0, _underscore.isString)(str) && str[0] == '#';
-}; /**
-    * Selectors in GrapesJS are used in CSS Composer inside Rules and in Components as classes. To get better this concept let's take
-    * a look at this code:
-    *
-    * ```css
-    * span > #send-btn.btn{
-    *  ...
-    * }
-    * ```
-    * ```html
-    * <span>
-    *   <button id="send-btn" class="btn"></button>
-    * </span>
-    * ```
-    *
-    * In this scenario we get:
-    * * span     -> selector of type `tag`
-    * * send-btn -> selector of type `id`
-    * * btn      -> selector of type `class`
-    *
-    * So, for example, being `btn` the same class entity it'll be easier to refactor and track things.
-    *
-    * You can customize the initial state of the module from the editor initialization, by passing the following [Configuration Object](https://github.com/artf/grapesjs/blob/master/src/selector_manager/config/config.js)
-    * ```js
-    * const editor = grapesjs.init({
-    *  selectorManager: {
-    *    // options
-    *  }
-    * })
-    * ```
-    *
-    * Once the editor is instantiated you can use its API. Before using these methods you should get the module from the instance
-    *
-    * ```js
-    * const selectorManager = editor.SelectorManager;
-    * ```
-    *
-    * * [getConfig](#getconfig)
-    * * [add](#add)
-    * * [addClass](#addclass)
-    * * [get](#get)
-    * * [getAll](#getAll)
-    *
-    * @module SelectorManager
-    */
-
+};
 var isClass = function isClass(str) {
   return (0, _underscore.isString)(str) && str[0] == '.';
 };
@@ -42448,25 +44529,10 @@ module.exports = function (config) {
         el.appendChild(this.render([]));
       }
     },
+    addSelector: function addSelector(name) {
+      var opt = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
-
-    /**
-     * Add a new selector to collection if it's not already exists. Class type is a default one
-     * @param {String} name Selector name
-     * @param {Object} opts Selector options
-     * @param {String} [opts.label=''] Label for the selector, if it's not provided the label will be the same as the name
-     * @param {String} [opts.type=1] Type of the selector. At the moment, only 'class' (1) is available
-     * @return {Model}
-     * @example
-     * var selector = selectorManager.add('selectorName');
-     * // Same as
-     * var selector = selectorManager.add('selectorName', {
-     *   type: 1,
-     *   label: 'selectorName'
-     * });
-     * */
-    add: function add(name) {
-      var opts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      var opts = _extends({}, opt);
 
       if ((0, _underscore.isObject)(name)) {
         opts = name;
@@ -42477,6 +44543,8 @@ module.exports = function (config) {
       if (isId(opts.name)) {
         opts.name = opts.name.substr(1);
         opts.type = Selector.TYPE_ID;
+      } else if (isClass(opts.name)) {
+        opts.name = opts.name.substr(1);
       }
 
       if (opts.label && !opts.name) {
@@ -42491,6 +44559,50 @@ module.exports = function (config) {
       }
 
       return selector;
+    },
+    getSelector: function getSelector(name) {
+      var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : Selector.TYPE_CLASS;
+
+      if (isId(name)) {
+        name = name.substr(1);
+        type = Selector.TYPE_ID;
+      } else if (isClass(name)) {
+        name = name.substr(1);
+      }
+
+      return selectors.where({ name: name, type: type })[0];
+    },
+
+
+    /**
+     * Add a new selector to collection if it's not already exists. Class type is a default one
+     * @param {String|Array} name Selector/s name
+     * @param {Object} opts Selector options
+     * @param {String} [opts.label=''] Label for the selector, if it's not provided the label will be the same as the name
+     * @param {String} [opts.type=1] Type of the selector. At the moment, only 'class' (1) is available
+     * @return {Model|Array}
+     * @example
+     * const selector = selectorManager.add('selectorName');
+     * // Same as
+     * const selector = selectorManager.add('selectorName', {
+     *   type: 1,
+     *   label: 'selectorName'
+     * });
+     * // Multiple selectors
+     * const selectors = selectorManager.add(['.class1', '.class2', '#id1']);
+     * */
+    add: function add(name) {
+      var _this = this;
+
+      var opts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+      if ((0, _underscore.isArray)(name)) {
+        return name.map(function (item) {
+          return _this.addSelector(item, opts);
+        });
+      } else {
+        return this.addSelector(name, opts);
+      }
     },
 
 
@@ -42520,20 +44632,31 @@ module.exports = function (config) {
 
     /**
      * Get the selector by its name
-     * @param {String} name Selector name
+     * @param {String|Array} name Selector name
      * @param {String} tyoe Selector type
-     * @return {Model|null}
+     * @return {Model|Array}
      * @example
-     * var selector = selectorManager.get('selectorName');
+     * const selector = selectorManager.get('selectorName');
+     * // or get an array
+     * const selectors = selectorManager.get(['class1', 'class2']);
      * */
-    get: function get(name) {
-      var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : Selector.TYPE_CLASS;
+    get: function get(name, type) {
+      var _this2 = this;
 
-      if (isId(name)) {
-        name = name.substr(1);
-        type = Selector.TYPE_ID;
+      if ((0, _underscore.isArray)(name)) {
+        var result = [];
+        var _selectors = name.map(function (item) {
+          return _this2.getSelector(item);
+        }).filter(function (item) {
+          return item;
+        });
+        _selectors.forEach(function (item) {
+          return result.indexOf(item) < 0 && result.push(item);
+        });
+        return result;
+      } else {
+        return this.getSelector(name, type);
       }
-      return selectors.where({ name: name, type: type })[0];
     },
 
 
@@ -42673,6 +44796,10 @@ var Selector = __webpack_require__(/*! ./Selector */ "./src/selector_manager/mod
 
 module.exports = __webpack_require__(/*! backbone */ "./node_modules/backbone/backbone.js").Collection.extend({
   model: Selector,
+
+  modelId: function modelId(attr) {
+    return attr.name + '_' + (attr.type || Selector.TYPE_CLASS);
+  },
 
   getStyleable: function getStyleable() {
     return (0, _underscore.filter)(this.models, function (item) {
@@ -43243,7 +45370,9 @@ module.exports = {
   // set contentType paramater of $.ajax
   // true: application/json; charset=utf-8'
   // false: 'x-www-form-urlencoded'
-  contentTypeJson: false
+  contentTypeJson: false,
+
+  credentials: 'include'
 };
 
 /***/ }),
@@ -43715,7 +45844,8 @@ module.exports = __webpack_require__(/*! backbone */ "./node_modules/backbone/ba
     beforeSend: function beforeSend() {},
     onComplete: function onComplete() {},
 
-    contentTypeJson: false
+    contentTypeJson: false,
+    credentials: 'include'
   },
 
   /**
@@ -43826,7 +45956,7 @@ module.exports = __webpack_require__(/*! backbone */ "./node_modules/backbone/ba
     }
     fetchOptions = {
       method: opts.method || 'post',
-      credentials: 'include',
+      credentials: this.get('credentials'),
       headers: headers
     };
 
@@ -44724,7 +46854,19 @@ var Property = __webpack_require__(/*! backbone */ "./node_modules/backbone/back
     // Use case:
     // you can add all SVG CSS properties with toRequire as true
     // and then require them on SVG Components
-    toRequire: 0
+    toRequire: 0,
+
+    // Specifies dependency on other properties of the selected object.
+    // Property is shown only when all conditions are matched.
+    //
+    // example: { display: ['flex', 'block'], position: ['absolute'] };
+    //          in this case the property is only shown when display is
+    //          of value 'flex' or 'block' AND position is 'absolute'
+    requires: null,
+
+    // Specifies dependency on properties of the parent of the selected object.
+    // Property is shown only when all conditions are matched.
+    requiresParent: null
   },
 
   initialize: function initialize() {
@@ -45074,6 +47216,7 @@ module.exports = function () {
           case 'height':
           case 'max-height':
           case 'min-height':
+          case 'flex-basis':
             obj.fixedValues = ['initial', 'inherit', 'auto'];
             break;
           case 'font-size':
@@ -45093,6 +47236,12 @@ module.exports = function () {
             obj.type = 'radio';
             break;
           case 'display':
+          case 'flex-direction':
+          case 'flex-wrap':
+          case 'justify-content':
+          case 'align-items':
+          case 'align-content':
+          case 'align-self':
           case 'font-family':
           case 'font-weight':
           case 'border-style':
@@ -45105,6 +47254,8 @@ module.exports = function () {
           case 'transition-timing-function':
           case 'cursor':
           case 'overflow':
+          case 'overflow-x':
+          case 'overflow-y':
             obj.type = 'select';
             break;
           case 'top':
@@ -45149,6 +47300,10 @@ module.exports = function () {
           case 'transform-scale-x':
           case 'transform-scale-y':
           case 'transform-scale-z':
+          case 'order':
+          case 'flex-grow':
+          case 'flex-shrink':
+          case 'flex-basis':
             obj.type = 'integer';
             break;
           case 'margin':
@@ -45187,6 +47342,24 @@ module.exports = function () {
           case 'display':
             obj.defaults = 'block';
             break;
+          case 'flex-direction':
+            obj.defaults = 'row';
+            break;
+          case 'flex-wrap':
+            obj.defaults = 'nowrap';
+            break;
+          case 'justify-content':
+            obj.defaults = 'flex-start';
+            break;
+          case 'align-items':
+            obj.defaults = 'stretch';
+            break;
+          case 'align-content':
+            obj.defaults = 'stretch';
+            break;
+          case 'align-self':
+            obj.defaults = 'auto';
+            break;
           case 'position':
             obj.defaults = 'static';
             break;
@@ -45213,6 +47386,8 @@ module.exports = function () {
           case 'transform-rotate-x':
           case 'transform-rotate-y':
           case 'transform-rotate-z':
+          case 'order':
+          case 'flex-grow':
             obj.defaults = 0;
             break;
           case 'border-top-left-radius':
@@ -45224,6 +47399,7 @@ module.exports = function () {
           case 'transform-scale-x':
           case 'transform-scale-y':
           case 'transform-scale-z':
+          case 'flex-shrink':
             obj.defaults = 1;
             break;
           case 'box-shadow-blur':
@@ -45237,6 +47413,7 @@ module.exports = function () {
           case 'height':
           case 'background-size':
           case 'cursor':
+          case 'flex-basis':
             obj.defaults = 'auto';
             break;
           case 'font-family':
@@ -45287,7 +47464,33 @@ module.exports = function () {
             obj.defaults = 'ease';
             break;
           case 'overflow':
+          case 'overflow-x':
+          case 'overflow-y':
             obj.defaults = 'visible';
+            break;
+        }
+
+        /*
+         * Add styleable dependency on other properties. Allows properties to be
+         * dynamically hidden or shown based on values of other properties.
+         *
+         * Property will be styleable if all of the properties (keys) in the
+         * requires object have any of the values specified in the array.
+         */
+        switch (prop) {
+          case 'flex-direction':
+          case 'flex-wrap':
+          case 'justify-content':
+          case 'align-items':
+          case 'align-content':
+            obj.requires = { display: ['flex'] };
+            break;
+          case 'order':
+          case 'flex-basis':
+          case 'flex-grow':
+          case 'flex-shrink':
+          case 'align-self':
+            obj.requiresParent = { display: ['flex'] };
             break;
         }
 
@@ -45314,6 +47517,9 @@ module.exports = function () {
           case 'max-width':
           case 'width':
             obj.units = ['px', '%', 'vw'];
+            break;
+          case 'flex-basis':
+            obj.units = ['px', '%', 'vw', 'vh'];
             break;
           case 'text-shadow-v':
           case 'text-shadow-h':
@@ -45373,6 +47579,7 @@ module.exports = function () {
           case 'box-shadow-blur':
           case 'transition-duration':
           case 'perspective':
+          case 'flex-basis':
             obj.min = 0;
             break;
         }
@@ -45424,7 +47631,25 @@ module.exports = function () {
             obj.list = [{ value: 'none' }, { value: 'left' }, { value: 'right' }];
             break;
           case 'display':
-            obj.list = [{ value: 'block' }, { value: 'inline' }, { value: 'inline-block' }, { value: 'none' }];
+            obj.list = [{ value: 'block' }, { value: 'inline' }, { value: 'inline-block' }, { value: 'flex' }, { value: 'none' }];
+            break;
+          case 'flex-direction':
+            obj.list = [{ value: 'row' }, { value: 'row-reverse' }, { value: 'column' }, { value: 'column-reverse' }];
+            break;
+          case 'flex-wrap':
+            obj.list = [{ value: 'nowrap' }, { value: 'wrap' }, { value: 'wrap-reverse' }];
+            break;
+          case 'justify-content':
+            obj.list = [{ value: 'flex-start' }, { value: 'flex-end' }, { value: 'center' }, { value: 'space-between' }, { value: 'space-around' }, { value: 'space-evenly' }];
+            break;
+          case 'align-items':
+            obj.list = [{ value: 'flex-start' }, { value: 'flex-end' }, { value: 'center' }, { value: 'baseline' }, { value: 'stretch' }];
+            break;
+          case 'align-content':
+            obj.list = [{ value: 'flex-start' }, { value: 'flex-end' }, { value: 'center' }, { value: 'space-between' }, { value: 'space-around' }, { value: 'stretch' }];
+            break;
+          case 'align-self':
+            obj.list = [{ value: 'auto' }, { value: 'flex-start' }, { value: 'flex-end' }, { value: 'center' }, { value: 'baseline' }, { value: 'stretch' }];
             break;
           case 'position':
             obj.list = [{ value: 'static' }, { value: 'relative' }, { value: 'absolute' }, { value: 'fixed' }];
@@ -45474,6 +47699,8 @@ module.exports = function () {
             obj.list = [{ value: 'auto' }, { value: 'pointer' }, { value: 'copy' }, { value: 'crosshair' }, { value: 'grab' }, { value: 'grabbing' }, { value: 'help' }, { value: 'move' }, { value: 'text' }];
             break;
           case 'overflow':
+          case 'overflow-x':
+          case 'overflow-y':
             obj.list = [{ value: 'visible' }, { value: 'hidden' }, { value: 'scroll' }, { value: 'auto' }];
             break;
         }
@@ -47146,6 +49373,8 @@ module.exports = _backbone2.default.View.extend({
   }, 'click [' + clearProp + ']', 'clear'),
 
   initialize: function initialize() {
+    var _this = this;
+
     var o = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
     (0, _underscore.bindAll)(this, 'targetUpdated');
@@ -47173,6 +49402,14 @@ module.exports = _backbone2.default.View.extend({
 
     em && em.on('update:component:style:' + this.property, this.targetUpdated);
     //em && em.on(`styleable:change:${this.property}`, this.targetUpdated);
+
+    // Listening to changes of properties in this.requires, so that styleable
+    // changes based on other properties are propagated
+    var requires = model.get('requires');
+    requires && Object.keys(requires).forEach(function (property) {
+      em && em.on('component:styleUpdate:' + property, _this.targetUpdated);
+    });
+
     this.listenTo(this.propTarget, 'update styleManager:update', this.targetUpdated);
     this.listenTo(model, 'destroy remove', this.remove);
     this.listenTo(model, 'change:value', this.modelValueChanged);
@@ -47225,13 +49462,13 @@ module.exports = _backbone2.default.View.extend({
    * Clear the property from the target
    */
   clear: function clear(e) {
-    var _this = this;
+    var _this2 = this;
 
     e && e.stopPropagation();
     this.model.clearValue();
     // Skip one stack with setTimeout to avoid inconsistencies
     setTimeout(function () {
-      return _this.targetUpdated();
+      return _this2.targetUpdated();
     });
   },
 
@@ -47526,6 +49763,10 @@ module.exports = _backbone2.default.View.extend({
     var toRequire = model.get('toRequire');
     var unstylable = trg.get('unstylable');
     var stylableReq = trg.get('stylable-require');
+    var requires = model.get('requires');
+    var requiresParent = model.get('requiresParent');
+    var sectors = this.sector ? this.sector.collection : null;
+    var selected = this.em ? this.em.getSelected() : null;
     var stylable = trg.get('stylable');
 
     // Stylable could also be an array indicating with which property
@@ -47542,6 +49783,33 @@ module.exports = _backbone2.default.View.extend({
     // Check if the property is available only if requested
     if (toRequire) {
       stylable = !target || stylableReq && (stylableReq.indexOf(id) >= 0 || stylableReq.indexOf(property) >= 0);
+    }
+
+    // Check if the property is available based on other property's values
+    if (sectors && requires) {
+      var properties = Object.keys(requires);
+      sectors.each(function (sector) {
+        sector.get('properties').each(function (model) {
+          if ((0, _underscore.includes)(properties, model.id)) {
+            var values = requires[model.id];
+            stylable = stylable && (0, _underscore.includes)(values, model.get('value'));
+          }
+        });
+      });
+    }
+
+    // Check if the property is available based on parent's property values
+    if (requiresParent) {
+      var parent = selected && selected.parent();
+      var parentEl = parent && parent.getEl();
+      if (parentEl) {
+        var styles = window.getComputedStyle(parentEl);
+        (0, _underscore.each)(requiresParent, function (values, property) {
+          stylable = stylable && styles[property] && (0, _underscore.includes)(values, styles[property]);
+        });
+      } else {
+        stylable = false;
+      }
     }
 
     return stylable;
@@ -52653,6 +54921,8 @@ module.exports = _backbone2.default.View.extend({
     this.dragHelper = null;
     this.canvasRelative = o.canvasRelative || 0;
     this.selectOnEnd = !o.avoidSelectOnEnd;
+    // currently 'active' textview model
+    this.activeTextModel = null;
 
     if (this.em && this.em.on) {
       this.em.on('change:canvasOffset', this.udpateOffset);
@@ -52938,6 +55208,34 @@ module.exports = _backbone2.default.View.extend({
       return $(src).data('model');
     }
   },
+  updateTextViewCursorPosition: function updateTextViewCursorPosition(e) {
+    var targetDoc = editor.Canvas.getBody().ownerDocument;
+    var range = null;
+
+    if (targetDoc.caretRangeFromPoint) {
+      // Chrome
+      range = targetDoc.caretRangeFromPoint(e.clientX, e.clientY);
+    } else if (e.rangeParent) {
+      // Firefox
+      range = targetDoc.createRange();
+      range.setStart(e.rangeParent, e.rangeOffset);
+    }
+
+    var sel = editor.Canvas.getFrameEl().contentWindow.getSelection();
+    editor.Canvas.getFrameEl().focus();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  },
+  disableEditingOn: function disableEditingOn(textModel) {
+    if (textModel != null) {
+      textModel.view.disableEditing();
+    }
+  },
+  setContentEditable: function setContentEditable(textModel, mode) {
+    if (textModel != null) {
+      if (textModel.view.el.contentEditable != mode) textModel.view.el.contentEditable = mode;
+    }
+  },
 
 
   /**
@@ -52991,28 +55289,56 @@ module.exports = _backbone2.default.View.extend({
     this.rY = rY;
     this.eventMove = e;
 
-    //var targetNew = this.getTargetFromEl(e.target);
+    var sourceModel = this.getSourceModel();
     var dims = this.dimsFromTarget(e.target, rX, rY);
     var target = this.target;
     var targetModel = this.getTargetModel(target);
     this.selectTargetModel(targetModel);
     if (!targetModel) plh.style.display = 'none';
 
-    this.lastDims = dims;
-    var pos = this.findPosition(dims, rX, rY);
-    // If there is a significant changes with the pointer
-    if (!this.lastPos || this.lastPos.index != pos.index || this.lastPos.method != pos.method) {
-      this.movePlaceholder(this.plh, dims, pos, this.prevTargetDim);
-      if (!this.$plh) this.$plh = $(this.plh);
+    var showPlh = true;
 
-      // With canvasRelative the offset is calculated automatically for
-      // each element
-      if (!this.canvasRelative) {
-        if (this.offTop) this.$plh.css('top', '+=' + this.offTop + 'px');
-        if (this.offLeft) this.$plh.css('left', '+=' + this.offLeft + 'px');
+    if (sourceModel.get('textable')) {
+      //if (targetModel.config.type === "text") {
+      if (targetModel.attributes.type === 'text') {
+        if (this.activeTextModel != null && this.activeTextModel != targetModel) {
+          this.setContentEditable(this.activeTextModel, false);
+          this.activeTextModel = targetModel;
+          this.setContentEditable(this.activeTextModel, true);
+        } else {
+          // Also enable editing when dragging from within the textview
+
+          this.activeTextModel = targetModel;
+          this.setContentEditable(this.activeTextModel, true);
+        }
       }
+      this.lastDims = dims;
+      this.plh.style.display = 'none';
 
+      var pos = this.findPosition(dims, rX, rY);
       this.lastPos = pos;
+      this.updateTextViewCursorPosition(e);
+    } else {
+      this.activeTextModel = null;
+
+      this.lastDims = dims;
+
+      var pos = this.findPosition(dims, rX, rY);
+      // If there is a significant changes with the pointer
+      if (!this.lastPos || this.lastPos.index != pos.index || this.lastPos.method != pos.method) {
+        this.movePlaceholder(this.plh, dims, pos, this.prevTargetDim);
+
+        if (!this.$plh) this.$plh = $(this.plh);
+
+        // With canvasRelative the offset is calculated automatically for
+        // each element
+        if (!this.canvasRelative) {
+          if (this.offTop) this.$plh.css('top', '+=' + this.offTop + 'px');
+          if (this.offLeft) this.$plh.css('left', '+=' + this.offLeft + 'px');
+        }
+
+        this.lastPos = pos;
+      }
     }
 
     if (typeof this.onMoveClb === 'function') this.onMoveClb(e);
@@ -53588,6 +55914,9 @@ module.exports = _backbone2.default.View.extend({
     var dragInfo = validResult.dragInfo;
     var dropContent = this.dropContent;
     droppable = validResult.trgModel instanceof _backbone2.default.Collection ? 1 : droppable;
+    var modelIsTextable = model.get('textable');
+    var targetType = validResult.trgModel.attributes.type.toLowerCase();
+    var targetIsTextView = targetType === 'text' || targetType === 'default';
 
     if (targetCollection && droppable && draggable) {
       index = pos.method === 'after' ? index + 1 : index;
@@ -53598,7 +55927,7 @@ module.exports = _backbone2.default.View.extend({
         opts.temporary = 1;
         modelTemp = targetCollection.add({}, _extends({}, opts));
 
-        if (model) {
+        if (model.collection) {
           modelToDrop = model.collection.remove(model);
         }
       } else {
@@ -53607,12 +55936,22 @@ module.exports = _backbone2.default.View.extend({
         opts.avoidUpdateStyle = 1;
       }
 
-      created = targetCollection.add(modelToDrop, opts);
+      if (targetIsTextView && modelIsTextable) {
+        this.activeTextModel.view.onActive();
+        this.activeTextModel.view.activeRte.insertHTML(model.toHTML({}));
+        created = null;
+      } else {
+        created = targetCollection.add(modelToDrop, opts);
+      }
 
       if (!dropContent) {
         targetCollection.remove(modelTemp);
       } else {
         this.dropContent = null;
+      }
+
+      if (targetIsTextView && modelIsTextable) {
+        this.disableEditingOn(this.activeTextModel);
       }
 
       // This will cause to recalculate children dimensions
@@ -54113,7 +56452,7 @@ module.exports = function () {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.getUnitFromValue = exports.normalizeFloat = exports.shallowDiff = exports.getElement = exports.camelCase = exports.getModel = exports.matches = exports.upFirst = exports.hasDnd = exports.off = exports.on = undefined;
+exports.getUnitFromValue = exports.getPointerEvent = exports.normalizeFloat = exports.shallowDiff = exports.getElement = exports.camelCase = exports.getModel = exports.matches = exports.upFirst = exports.hasDnd = exports.off = exports.on = undefined;
 
 var _underscore = __webpack_require__(/*! underscore */ "./node_modules/underscore/underscore.js");
 
@@ -54248,6 +56587,15 @@ var getModel = function getModel(el, $) {
   return model;
 };
 
+/**
+ * Get cross-device pointer event
+ * @param  {Event} ev
+ * @return {Event}
+ */
+var getPointerEvent = function getPointerEvent(ev) {
+  return ev.touches && ev.touches[0] ? ev.touches[0] : ev;
+};
+
 exports.on = on;
 exports.off = off;
 exports.hasDnd = hasDnd;
@@ -54258,6 +56606,7 @@ exports.camelCase = camelCase;
 exports.getElement = getElement;
 exports.shallowDiff = shallowDiff;
 exports.normalizeFloat = normalizeFloat;
+exports.getPointerEvent = getPointerEvent;
 exports.getUnitFromValue = getUnitFromValue;
 
 /***/ }),

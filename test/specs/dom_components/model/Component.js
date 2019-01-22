@@ -434,7 +434,7 @@ module.exports = {
       });
 
       test('Not droppable', () => {
-        expect(obj.get('droppable')).toEqual(false);
+        expect(obj.get('droppable')).toEqual('[data-datatype=tag]');
       });
 
       test('Component toHTML with attributes', () => {

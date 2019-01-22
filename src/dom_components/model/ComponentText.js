@@ -4,7 +4,9 @@ module.exports = Component.extend({
   defaults: {
     ...Component.prototype.defaults,
     type: 'text',
-    droppable: false,
-    editable: true
+    textable: 1,
+    droppable: '[data-datatype=tag]',
+    editable: true,
+    layerable: false
   }
 });

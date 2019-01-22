@@ -116,6 +116,9 @@ module.exports = config => {
           } else if (nodeName == 'class') {
             model.classes = this.parseClass(nodeValue);
           } else if (nodeName == 'contenteditable') {
+            if (nodeValue === 'false' && !model.editable) {
+              model.attributes[nodeName] = 'false';
+            }
             continue;
           } else if (nodeName.indexOf(modelAttrStart) === 0) {
             const modelAttr = nodeName.replace(modelAttrStart, '');

@@ -80,7 +80,7 @@ module.exports = ComponentView.extend({
           const selectable = !['text', 'default', ''].some(type =>
             model.is(type)
           );
-          model.set({
+          let defaultProperties = {
             editable: selectable && model.get('editable'),
             highlightable: 0,
             removable: 0,
@@ -89,7 +89,19 @@ module.exports = ComponentView.extend({
             selectable: selectable,
             hoverable: selectable,
             toolbar: ''
-          });
+          };
+
+          let textableProperties = {
+            editable: selectable && model.get('editable'),
+            highlightable: 1,
+            badgable: 0,
+            draggable: 1,
+            copyable: 1,
+            textable: 1
+          };
+          model.set(
+            model.get('textable') ? textableProperties : defaultProperties
+          );
           model.get('components').each(model => clean(model));
         };
 
