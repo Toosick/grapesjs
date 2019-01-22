@@ -26,29 +26,16 @@ module.exports = Component.extend(
           label: 'Name',
           name: 'name',
           changeProp: 1,
-          options: _.map(
-            [
-              {
-                object: 'EmailTemplateTag',
-                name: 'grand_total',
-                description: 'The total transaction amount.'
-              },
-              {
-                object: 'EmailTemplateTag',
-                name: 'name',
-                description: "The customer's first and last names."
-              },
-              {
-                object: 'EmailTemplateTag',
-                name: 'merchant',
-                description: "Merchant's name"
-              }
-            ],
-            ({ name }) => ({
-              value: name,
-              name: name
-            })
-          )
+          options: [
+            {
+              value: 'variable1',
+              name: 'variable1'
+            },
+            {
+              value: 'variable2',
+              name: 'variable2'
+            }
+          ]
         }
       ]
     },
@@ -64,7 +51,6 @@ module.exports = Component.extend(
 
     initialize(o, opt) {
       Component.prototype.initialize.apply(this, arguments);
-      console.log('component tag initialize');
       this.listenTo(this, 'change:name', this.handleNameChange);
     }
   },
