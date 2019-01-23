@@ -19,13 +19,12 @@ module.exports = Component.extend(
         'data-gjs-type': 'tag',
         contenteditable: 'false'
       },
-      content: '{{ TAG }}',
+      content: '{{ tag: not set }}',
       traits: [
         {
           type: 'select',
           label: 'Name',
           name: 'name',
-          changeProp: 1,
           options: [
             {
               value: 'variable1',
@@ -40,19 +39,15 @@ module.exports = Component.extend(
       ]
     },
     handleNameChange() {
-      const name = this.changed.name;
+      const name = this.changed.attributes.name;
       this.set({
-        attributes: {
-          ...this.attributes.attributes,
-          name
-        },
         content: `{{ ${name} }}`
       });
     },
 
     initialize(o, opt) {
       Component.prototype.initialize.apply(this, arguments);
-      this.listenTo(this, 'change:name', this.handleNameChange);
+      this.listenTo(this, 'change:attributes:name', this.handleNameChange);
     }
   },
   {
