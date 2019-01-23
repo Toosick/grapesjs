@@ -40,12 +40,13 @@ module.exports = Component.extend(
       ]
     },
     handleNameChange() {
-      console.log('handleNameChange');
-      const el = this.getEl();
       const name = this.changed.name;
-      el.innerHTML = `{{ ${name} }}`;
       this.set({
-        attributes: { name }
+        attributes: {
+          ...this.attributes.attributes,
+          name
+        },
+        content: `{{ ${name} }}`
       });
     },
 

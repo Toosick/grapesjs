@@ -188,7 +188,7 @@ module.exports = config => {
             const cType = comp.type;
 
             if (
-              ['text', 'textnode'].indexOf(cType) < 0 &&
+              ['text', 'textnode', 'tag'].indexOf(cType) < 0 &&
               c.textTags.indexOf(comp.tagName) < 0
             ) {
               allTxt = 0;
