@@ -35474,7 +35474,7 @@ module.exports = Component.extend({
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-/* WEBPACK VAR INJECTION */(function(_) {
+
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
@@ -35497,46 +35497,29 @@ module.exports = Component.extend({
       'data-gjs-type': 'tag',
       contenteditable: 'false'
     },
-    content: '{{ TAG }}',
+    content: '{{ tag: not set }}',
     traits: [{
       type: 'select',
       label: 'Name',
       name: 'name',
-      changeProp: 1,
-      options: _.map([{
-        object: 'EmailTemplateTag',
-        name: 'grand_total',
-        description: 'The total transaction amount.'
+      options: [{
+        value: 'variable1',
+        name: 'variable1'
       }, {
-        object: 'EmailTemplateTag',
-        name: 'name',
-        description: "The customer's first and last names."
-      }, {
-        object: 'EmailTemplateTag',
-        name: 'merchant',
-        description: "Merchant's name"
-      }], function (_ref) {
-        var name = _ref.name;
-        return {
-          value: name,
-          name: name
-        };
-      })
+        value: 'variable2',
+        name: 'variable2'
+      }]
     }]
   }),
   handleNameChange: function handleNameChange() {
-    console.log('handleNameChange');
-    var el = this.getEl();
-    var name = this.changed.name;
-    el.innerHTML = '{{ ' + name + ' }}';
+    var name = this.changed.attributes.name;
     this.set({
-      attributes: { name: name }
+      content: '{{ ' + name + ' }}'
     });
   },
   initialize: function initialize(o, opt) {
     Component.prototype.initialize.apply(this, arguments);
-    console.log('component tag initialize');
-    this.listenTo(this, 'change:name', this.handleNameChange);
+    this.listenTo(this, 'change:attributes:name', this.handleNameChange);
   }
 }, {
   /**
@@ -35555,7 +35538,6 @@ module.exports = Component.extend({
     return result;
   }
 });
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! underscore */ "./node_modules/underscore/underscore.js")))
 
 /***/ }),
 
@@ -36523,8 +36505,7 @@ module.exports = ComponentView.extend({
   tagName: 'span',
 
   events: {
-    dblclick: 'openModal',
-    click: 'logModel',
+    dblclick: 'openComponentSettings',
     keydown: function keydown() {
       if (e.key === 'Backspace') {
         e.target.parentNode.removeChild(e.target);
@@ -36535,34 +36516,14 @@ module.exports = ComponentView.extend({
   initialize: function initialize(o) {
     var model = this.model;
     ComponentView.prototype.initialize.apply(this, arguments);
-    this.listenTo(model, 'dblclick active', this.openModal);
-    this.listenTo(model, 'click', this.logModel);
+    this.listenTo(model, 'dblclick active', this.openComponentSettings);
     var config = this.config;
     config.modal && (this.modal = config.modal);
   },
-  logModel: function logModel() {
-    console.log(this.model);
-  },
-
-
-  /**
-   * Open dialog for image changing
-   * @param  {Object}  e  Event
-   * @private
-   * */
-  openModal: function openModal(e) {
-    var em = this.opts.config.em;
-    var editor = em ? em.get('Editor') : '';
-    var modal = editor.Modal;
-    modal.setTitle('Select Merge Field');
-    modal.setContent('Hello world');
-    modal.open();
+  openComponentSettings: function openComponentSettings() {
+    this.config.em.get('Editor').Panels.getButton('views', 'open-tm').set('active', true);
   },
   render: function render() {
-    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-      args[_key] = arguments[_key];
-    }
-
     ComponentView.prototype.render.apply(this, arguments);
     var name = this.attr.name || 'tag: not set';
     this.el.innerHTML = '{{ ' + name + ' }}';
@@ -43506,7 +43467,7 @@ module.exports = function (config) {
             var comp = comps[ci];
             var cType = comp.type;
 
-            if (['text', 'textnode'].indexOf(cType) < 0 && c.textTags.indexOf(comp.tagName) < 0) {
+            if (['text', 'textnode', 'tag'].indexOf(cType) < 0 && c.textTags.indexOf(comp.tagName) < 0) {
               allTxt = 0;
               break;
             }
